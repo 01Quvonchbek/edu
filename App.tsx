@@ -4,7 +4,7 @@ import {
   Menu, X, ArrowRight, Mail, Award, Users, Phone, MapPin, Send, Instagram, Youtube, Facebook, 
   Code2, Newspaper, Play, Calendar, Sparkles, Trophy, ChevronRight, ExternalLink
 } from 'lucide-react';
-import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem } from './types';
+import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem, GlobalStats } from './types';
 import { INITIAL_COURSES, INITIAL_NEWS, ACHIEVEMENTS as INITIAL_ACHIEVEMENTS } from './constants';
 import AdminPanel from './components/AdminPanel';
 import LoginForm from './components/LoginForm';
@@ -26,6 +26,15 @@ const App: React.FC = () => {
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
     const s = localStorage.getItem('edu_achievements');
     return s ? JSON.parse(s) : INITIAL_ACHIEVEMENTS;
+  });
+  const [globalStats, setGlobalStats] = useState<GlobalStats>(() => {
+    const s = localStorage.getItem('edu_global_stats');
+    return s ? JSON.parse(s) : {
+      jobPlacement: '98%',
+      itDirections: '15+',
+      mentors: '50+',
+      ieltsResults: '200+'
+    };
   });
   const [contactInfo, setContactInfo] = useState<ContactInfo>(() => {
     const s = localStorage.getItem('edu_contact');
@@ -55,11 +64,12 @@ const App: React.FC = () => {
     localStorage.setItem('edu_courses', JSON.stringify(courses));
     localStorage.setItem('edu_news', JSON.stringify(news));
     localStorage.setItem('edu_achievements', JSON.stringify(achievements));
+    localStorage.setItem('edu_global_stats', JSON.stringify(globalStats));
     localStorage.setItem('edu_contact', JSON.stringify(contactInfo));
     localStorage.setItem('edu_teacher_image', teacherImage);
     localStorage.setItem('edu_messages', JSON.stringify(messages));
     localStorage.setItem('edu_enrollments', JSON.stringify(enrollments));
-  }, [courses, news, achievements, contactInfo, teacherImage, messages, enrollments]);
+  }, [courses, news, achievements, globalStats, contactInfo, teacherImage, messages, enrollments]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -116,8 +126,8 @@ const App: React.FC = () => {
     if (!isLoggedIn) return <LoginForm onLogin={setIsLoggedIn} onCancel={() => setActiveSection(AppSection.HOME)} />;
     return (
       <AdminPanel 
-        courses={courses} achievements={achievements} news={news} teacherImage={teacherImage} contactInfo={contactInfo} messages={messages} enrollments={enrollments}
-        onUpdateTeacherImage={setTeacherImage} onUpdateContactInfo={setContactInfo}
+        courses={courses} achievements={achievements} news={news} teacherImage={teacherImage} contactInfo={contactInfo} messages={messages} enrollments={enrollments} globalStats={globalStats}
+        onUpdateTeacherImage={setTeacherImage} onUpdateContactInfo={setContactInfo} onUpdateGlobalStats={setGlobalStats}
         onAddCourse={c => setCourses([c, ...courses])} onUpdateCourse={u => setCourses(courses.map(c => c.id === u.id ? u : c))} onDeleteCourse={id => setCourses(courses.filter(c => c.id !== id))}
         onAddNews={n => setNews([n, ...news])} onUpdateNews={u => setNews(news.map(n => n.id === u.id ? u : n))} onDeleteNews={id => setNews(news.filter(n => n.id !== id))}
         onAddAchievement={a => setAchievements([a, ...achievements])} onUpdateAchievement={u => setAchievements(achievements.map(a => a.id === u.id ? u : a))} onDeleteAchievement={id => setAchievements(achievements.filter(a => a.id !== id))}
@@ -226,7 +236,7 @@ const App: React.FC = () => {
             <div className="flex gap-3">
                <button className="px-6 py-3 bg-slate-100 text-slate-900 rounded-2xl font-bold text-sm hover:bg-indigo-600 hover:text-white transition-all">Barchasi</button>
                <button className="px-6 py-3 bg-white border text-slate-500 rounded-2xl font-bold text-sm hover:border-indigo-600 hover:text-indigo-600 transition-all">IT</button>
-               <button className="px-6 py-3 bg-white border text-slate-500 rounded-2xl font-bold text-sm hover:border-indigo-600 hover:text-indigo-600 transition-all">Tillar</button>
+               {/* "Tillar" filter button removed as requested */}
             </div>
           </div>
           
@@ -338,21 +348,21 @@ const App: React.FC = () => {
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-6 pt-12">
                   <div className="bg-indigo-600 p-8 rounded-[48px] text-white shadow-2xl shadow-indigo-200">
-                    <h5 className="text-4xl font-black mb-1">98%</h5>
+                    <h5 className="text-4xl font-black mb-1">{globalStats.jobPlacement}</h5>
                     <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Ish bilan ta'minlash</p>
                   </div>
                   <div className="bg-white p-8 rounded-[48px] border border-slate-100 shadow-xl">
-                    <h5 className="text-4xl font-black text-slate-900 mb-1">15+</h5>
+                    <h5 className="text-4xl font-black text-slate-900 mb-1">{globalStats.itDirections}</h5>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IT Yo'nalishlar</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="bg-slate-900 p-8 rounded-[48px] text-white shadow-2xl">
-                    <h5 className="text-4xl font-black mb-1">50+</h5>
+                    <h5 className="text-4xl font-black mb-1">{globalStats.mentors}</h5>
                     <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Mentorlar</p>
                   </div>
                   <div className="bg-indigo-50 p-8 rounded-[48px] border border-indigo-100">
-                    <h5 className="text-4xl font-black text-indigo-600 mb-1">200+</h5>
+                    <h5 className="text-4xl font-black text-indigo-600 mb-1">{globalStats.ieltsResults}</h5>
                     <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">IELTS 7.0+</p>
                   </div>
                 </div>

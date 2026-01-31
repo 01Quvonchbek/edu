@@ -3,24 +3,26 @@ import React, { useState, useRef } from 'react';
 import { 
   LayoutDashboard, BookOpen, Sparkles, Plus, Trash2, Edit3, ArrowLeft, Loader2, Award, Save, X, 
   Upload, Image as ImageIcon, User as UserIcon, Phone, MessageSquare, UserCheck, Code2, 
-  Check, Camera, Calendar, Newspaper, Video, Mail, MapPin, Send, Instagram, Youtube, Facebook 
+  Check, Camera, Calendar, Newspaper, Video, Mail, MapPin, Send, Instagram, Youtube, Facebook, BarChart3
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
-import { AdminSubSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem } from '../types';
+import { AdminSubSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem, GlobalStats } from '../types';
 import { generateCourseOutline } from '../services/geminiService';
 
 interface AdminPanelProps {
   courses: Course[];
   achievements: Achievement[];
   news: NewsItem[];
+  globalStats: GlobalStats;
   teacherImage: string;
   contactInfo: ContactInfo;
   messages: ContactMessage[];
   enrollments: CourseEnrollment[];
   onUpdateTeacherImage: (url: string) => void;
   onUpdateContactInfo: (info: ContactInfo) => void;
+  onUpdateGlobalStats: (stats: GlobalStats) => void;
   onAddCourse: (course: Course) => void;
   onUpdateCourse: (course: Course) => void;
   onDeleteCourse: (id: string) => void;
@@ -55,6 +57,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   const [newsForm, setNewsForm] = useState<Partial<NewsItem>>({});
   const [achForm, setAchForm] = useState<Partial<Achievement>>({});
   const [contactForm, setContactForm] = useState<ContactInfo>(props.contactInfo);
+  const [statsForm, setStatsForm] = useState<GlobalStats>(props.globalStats);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileFileInputRef = useRef<HTMLInputElement>(null);
@@ -114,7 +117,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
           <SidebarBtn id={AdminSubSection.PROFILE_MGMT} icon={UserIcon} label="Profil rasmi" />
           <SidebarBtn id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslar" count={props.courses.length} />
           <SidebarBtn id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" count={props.news.length} />
-          <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar" count={props.achievements.length} />
+          <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar va Statistika" count={props.achievements.length} />
           <SidebarBtn id={AdminSubSection.ENROLLMENTS} icon={UserCheck} label="Arizalar" count={props.enrollments.length} />
           <SidebarBtn id={AdminSubSection.MESSAGES} icon={MessageSquare} label="Xabarlar" count={props.messages.length} />
           <SidebarBtn id={AdminSubSection.CONTACT_MGMT} icon={Phone} label="Kontaktlar" />
@@ -203,14 +206,18 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
             <div className="space-y-6 animate-fadeIn">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-black">Kurslar</h2>
-                <button onClick={() => { setEditingCourse(null); setCourseForm({category:'Dasturlash', duration:'3 oy'}); setShowCourseModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
+                <button onClick={() => { setEditingCourse(null); setCourseForm({category:'Dasturlash', duration:'3 oy', students: 0}); setShowCourseModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 {props.courses.map(c => (
                   <div key={c.id} className="bg-white p-6 rounded-[32px] border flex items-center justify-between hover:border-indigo-600 transition">
                     <div className="flex items-center gap-4">
                       <img src={c.image} className="w-16 h-16 rounded-2xl object-cover" />
-                      <div><h4 className="font-black">{c.title}</h4><p className="text-[10px] font-black text-indigo-600 uppercase">{c.category}</p></div>
+                      <div>
+                        <h4 className="font-black">{c.title}</h4>
+                        <p className="text-[10px] font-black text-indigo-600 uppercase">{c.category}</p>
+                        <p className="text-[10px] text-slate-400 font-bold">{c.students} o'quvchi</p>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => { setEditingCourse(c); setCourseForm(c); setShowCourseModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
@@ -243,21 +250,50 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
           )}
 
           {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-black">Yutuqlar</h2>
-                <button onClick={() => { setEditingAchievement(null); setAchForm({date: '2024'}); setShowAchievementModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
-              </div>
-              <div className="grid gap-4">
-                {props.achievements.map(a => (
-                  <div key={a.id} className="bg-white p-4 rounded-3xl border flex items-center justify-between">
-                    <div className="flex items-center gap-4"><div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><Award/></div><h4 className="font-bold">{a.title} ({a.date})</h4></div>
-                    <div className="flex gap-2">
-                      <button onClick={() => { setEditingAchievement(a); setAchForm(a); setShowAchievementModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
-                      <button onClick={() => props.onDeleteAchievement(a.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18}/></button>
-                    </div>
+            <div className="space-y-12 animate-fadeIn">
+              {/* Global Statistics Editing */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-black flex items-center gap-2"><BarChart3 size={24} className="text-indigo-600"/> Asosiy Statistikalar</h2>
+                <div className="bg-white p-8 rounded-[40px] border shadow-xl grid grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Ish bilan ta'minlash (%)</label>
+                    <input type="text" value={statsForm.jobPlacement} onChange={e => setStatsForm({...statsForm, jobPlacement: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
-                ))}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">IT Yo'nalishlar soni</label>
+                    <input type="text" value={statsForm.itDirections} onChange={e => setStatsForm({...statsForm, itDirections: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Mentorlar soni</label>
+                    <input type="text" value={statsForm.mentors} onChange={e => setStatsForm({...statsForm, mentors: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">IELTS 7.0+ natijalar</label>
+                    <input type="text" value={statsForm.ieltsResults} onChange={e => setStatsForm({...statsForm, ieltsResults: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div className="col-span-2">
+                    <button onClick={() => props.onUpdateGlobalStats(statsForm)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2"><Save size={20}/> Statistikani saqlash</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Achievements list */}
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-black">Yutuqlar</h2>
+                  <button onClick={() => { setEditingAchievement(null); setAchForm({date: '2024'}); setShowAchievementModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
+                </div>
+                <div className="grid gap-4">
+                  {props.achievements.map(a => (
+                    <div key={a.id} className="bg-white p-4 rounded-3xl border flex items-center justify-between">
+                      <div className="flex items-center gap-4"><div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><Award/></div><h4 className="font-bold">{a.title} ({a.date})</h4></div>
+                      <div className="flex gap-2">
+                        <button onClick={() => { setEditingAchievement(a); setAchForm(a); setShowAchievementModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
+                        <button onClick={() => props.onDeleteAchievement(a.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18}/></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -329,10 +365,13 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
                 <input type="file" ref={fileInputRef} className="hidden" onChange={e => handleImageUpload(e, 'course')}/>
               </div>
               <input type="text" placeholder="Nomi" value={courseForm.title || ''} onChange={e => setCourseForm({...courseForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
-              <select value={courseForm.category} onChange={e => setCourseForm({...courseForm, category: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold"><option>Dasturlash</option><option>Dizayn</option><option>Marketing</option><option>Aniq fanlar</option></select>
+              <div className="grid grid-cols-2 gap-4">
+                <select value={courseForm.category} onChange={e => setCourseForm({...courseForm, category: e.target.value})} className="p-4 bg-slate-50 border rounded-2xl outline-none font-bold"><option>Dasturlash</option><option>Dizayn</option><option>Marketing</option><option>Aniq fanlar</option></select>
+                <input type="number" placeholder="O'quvchilar soni" value={courseForm.students || 0} onChange={e => setCourseForm({...courseForm, students: parseInt(e.target.value) || 0})} className="p-4 bg-slate-50 border rounded-2xl outline-none" />
+              </div>
               <textarea placeholder="Tavsif" value={courseForm.description || ''} onChange={e => setCourseForm({...courseForm, description: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-24 outline-none" />
               <textarea placeholder="Mundarija" value={courseForm.content || ''} onChange={e => setCourseForm({...courseForm, content: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-40 outline-none" />
-              <button onClick={() => { if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); else props.onAddCourse({id: Math.random().toString(36).substr(2,9), students:0, ...courseForm} as Course); setShowCourseModal(false); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
+              <button onClick={() => { if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); else props.onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseForm} as Course); setShowCourseModal(false); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
             </div>
           </div>
         </div>
@@ -359,7 +398,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
 
       {showAchievementModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-          <div className="bg-white rounded-[40px] p-10 w-full max-w-md shadow-2xl">
+          <div className="bg-white rounded-[40px] p-10 w-full max-md shadow-2xl">
             <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black">Yutuqni saqlash</h2><button onClick={() => setShowAchievementModal(false)}><X/></button></div>
             <div className="space-y-4">
               <input type="text" placeholder="Sarlavha" value={achForm.title || ''} onChange={e => setAchForm({...achForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />

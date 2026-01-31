@@ -18,6 +18,13 @@ export interface Achievement {
   content?: string;
 }
 
+export interface GlobalStats {
+  jobPlacement: string;
+  itDirections: string;
+  mentors: string;
+  ieltsResults: string;
+}
+
 export interface NewsItem {
   id: string;
   title: string;
