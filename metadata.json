@@ -1,0 +1,8 @@
+{
+  "name": "Copy of EduPortfolio Pro",
+  "description": "Ta'lim sohasidagi mutaxassislar uchun zamonaviy portfoli va admin paneli platformasi. Kurslarni boshqarish, statistikani ko'rish va AI yordamida kontent yaratish imkoniyatiga ega.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

@@ -1,0 +1,83 @@
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  students: number;
+  duration: string;
+  image: string;
+  content?: string;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  date: string;
+  description: string;
+  content?: string;
+}
+
+export interface GithubProject {
+  id: number;
+  name: string;
+  description: string;
+  html_url: string;
+  stargazers_count: number;
+  language: string;
+  updated_at: string;
+}
+
+export interface CourseEnrollment {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  studentName: string;
+  studentPhone: string;
+  date: string;
+}
+
+export interface ContactInfo {
+  address: string;
+  email: string;
+  phone: string;
+  instagram: string;
+  telegram: string;
+  youtube: string;
+  facebook: string;
+  github: string; // Bu yerda faqat username saqlanadi
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  date: string;
+}
+
+export interface Stat {
+  name: string;
+  value: number;
+}
+
+export enum AppSection {
+  HOME = 'home',
+  COURSES = 'courses',
+  PROJECTS = 'projects',
+  ABOUT = 'about',
+  CONTACT = 'contact',
+  ADMIN = 'admin',
+  LOGIN = 'login'
+}
+
+export enum AdminSubSection {
+  DASHBOARD = 'dashboard',
+  COURSE_MGMT = 'course_mgmt',
+  ACHIEVEMENT_MGMT = 'achievement_mgmt',
+  PROFILE_MGMT = 'profile_mgmt',
+  CONTACT_MGMT = 'contact_mgmt',
+  MESSAGES = 'messages',
+  ENROLLMENTS = 'enrollments',
+  AI_TOOLS = 'ai_tools'
+}
