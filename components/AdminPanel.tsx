@@ -28,9 +28,8 @@ import {
   Github,
   Send,
   Check,
-  RefreshCw,
-  Globe,
-  Camera
+  Camera,
+  Calendar
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -88,11 +87,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [aiResult, setAiResult] = useState<any>(null);
+  
+  // Modallar holati
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
   
+  // Kurs formasi
   const [courseFormData, setCourseFormData] = useState({
     title: '', category: '', description: '', duration: '3 oy', image: '', students: 0, content: ''
+  });
+
+  // Yutuq formasi
+  const [achievementFormData, setAchievementFormData] = useState({
+    title: '', date: '', description: '', content: ''
   });
 
   const [contactData, setContactData] = useState<ContactInfo>(contactInfo);
@@ -115,6 +124,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'course' | 'profile') => {
     const file = e.target.files?.[0];
     if (file) {
+      // Fayl hajmini tekshirish (ixtiyoriy, lekin Base64 uchun 2MB dan oshmagani yaxshi)
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Rasm hajmi juda katta (maksimal 2MB)");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
@@ -138,6 +153,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setEditingCourse(course);
     setCourseFormData({ ...course, content: course.content || '' });
     setShowCourseModal(true);
+  };
+
+  const openAddAchievementModal = () => {
+    setEditingAchievement(null);
+    setAchievementFormData({ title: '', date: new Date().getFullYear().toString(), description: '', content: '' });
+    setShowAchievementModal(true);
+  };
+
+  const openEditAchievementModal = (ach: Achievement) => {
+    setEditingAchievement(ach);
+    setAchievementFormData({ ...ach, content: ach.content || '' });
+    setShowAchievementModal(true);
   };
 
   const SidebarItem = ({ id, icon: Icon, label, count }: { id: AdminSubSection, icon: any, label: string, count?: number }) => (
@@ -343,7 +370,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 {courses.map(c => (
                   <div key={c.id} className="bg-white p-6 rounded-3xl flex justify-between items-center shadow-sm border border-slate-200">
                     <div className="flex gap-4 items-center">
-                      <img src={c.image} className="w-16 h-12 rounded-lg object-cover bg-slate-100" />
+                      <div className="w-16 h-12 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                        <img src={c.image} className="w-full h-full object-cover" />
+                      </div>
                       <h4 className="font-bold">{c.title}</h4>
                     </div>
                     <div className="flex gap-2">
@@ -352,6 +381,39 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-black">Yutuqlar va sertifikatlar</h2>
+                <button onClick={openAddAchievementModal} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition"><Plus size={20}/> Qo'shish</button>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {achievements.map(ach => (
+                  <div key={ach.id} className="bg-white p-6 rounded-3xl flex justify-between items-center shadow-sm border border-slate-200">
+                    <div className="flex gap-4 items-center">
+                      <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                        <Award size={24} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold">{ach.title}</h4>
+                        <p className="text-xs text-slate-400 font-bold uppercase">{ach.date}-yil</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => openEditAchievementModal(ach)} className="p-2 text-slate-400 hover:text-indigo-600 transition"><Edit3 size={18}/></button>
+                      <button onClick={() => onDeleteAchievement(ach.id)} className="p-2 text-slate-400 hover:text-rose-500 transition"><Trash2 size={18}/></button>
+                    </div>
+                  </div>
+                ))}
+                {achievements.length === 0 && (
+                  <div className="text-center p-12 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                    <p className="text-slate-400">Yutuqlar hali qo'shilmagan.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -389,13 +451,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
       </main>
 
+      {/* Kurs Qo'shish/Tahrirlash Modali */}
       {showCourseModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
           <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black">Kurs ma'lumotlari</h2><button onClick={() => setShowCourseModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition"><X/></button></div>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-black">{editingCourse ? 'Kursni tahrirlash' : 'Yangi kurs qo\'shish'}</h2>
+              <button onClick={() => setShowCourseModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition"><X/></button>
+            </div>
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Kurs rasm (JPG/PNG)</label>
+                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Kurs rasmi (JPG/PNG)</label>
                 <div className="flex gap-4 items-center">
                   <div className="w-32 h-20 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
                     {courseFormData.image ? <img src={courseFormData.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><ImageIcon size={24}/></div>}
@@ -408,20 +474,72 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-400 uppercase ml-1">Kurs nomi</label>
-                <input type="text" placeholder="Matematika asoslari" value={courseFormData.title} onChange={e => setCourseFormData({...courseFormData, title: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input type="text" placeholder="Masalan: Matematika asoslari" value={courseFormData.title} onChange={e => setCourseFormData({...courseFormData, title: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Yo'nalish</label>
+                  <input type="text" placeholder="Matematika" value={courseFormData.category} onChange={e => setCourseFormData({...courseFormData, category: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Davomiyligi</label>
+                  <input type="text" placeholder="3 oy" value={courseFormData.duration} onChange={e => setCourseFormData({...courseFormData, duration: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-400 uppercase ml-1">Qisqa tavsif</label>
                 <textarea placeholder="Kurs haqida qisqacha..." value={courseFormData.description} onChange={e => setCourseFormData({...courseFormData, description: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl h-24 outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-400 uppercase ml-1">To'liq ma'lumot</label>
+                <label className="text-xs font-bold text-slate-400 uppercase ml-1">To'liq ma'lumot (Dastur)</label>
                 <textarea placeholder="Kurs dasturi va batafsil ma'lumotlar..." value={courseFormData.content} onChange={e => setCourseFormData({...courseFormData, content: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl h-48 outline-none focus:ring-2 focus:ring-indigo-500" />
               </div>
               <button onClick={() => {
+                 if (!courseFormData.title) return alert("Sarlavhani kiriting!");
                  if(editingCourse) onUpdateCourse({...editingCourse, ...courseFormData});
-                 else onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseFormData, students: 0, image: courseFormData.image || 'https://picsum.photos/seed/edu/800/600', category: 'General'});
+                 else onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseFormData, students: 0, image: courseFormData.image || 'https://picsum.photos/seed/edu/800/600'});
                  setShowCourseModal(false);
+              }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition">Saqlash</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Yutuq Qo'shish/Tahrirlash Modali */}
+      {showAchievementModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-black">{editingAchievement ? 'Yutuqni tahrirlash' : 'Yangi yutuq qo\'shish'}</h2>
+              <button onClick={() => setShowAchievementModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition"><X/></button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Sarlavha</label>
+                  <input type="text" placeholder="Masalan: Yil o'qituvchisi" value={achievementFormData.title} onChange={e => setAchievementFormData({...achievementFormData, title: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase ml-1">Yil</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                    <input type="text" placeholder="2024" value={achievementFormData.date} onChange={e => setAchievementFormData({...achievementFormData, date: e.target.value})} className="w-full py-4 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Qisqa tavsif</label>
+                <textarea placeholder="Yutuq haqida qisqacha..." value={achievementFormData.description} onChange={e => setAchievementFormData({...achievementFormData, description: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl h-24 outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Batafsil ma'lumot</label>
+                <textarea placeholder="Qo'shimcha tafsilotlar..." value={achievementFormData.content} onChange={e => setAchievementFormData({...achievementFormData, content: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl h-40 outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+              <button onClick={() => {
+                 if (!achievementFormData.title || !achievementFormData.date) return alert("Sarlavha va yilni kiriting!");
+                 if(editingAchievement) onUpdateAchievement({...editingAchievement, ...achievementFormData});
+                 else onAddAchievement({id: Math.random().toString(36).substr(2,9), ...achievementFormData});
+                 setShowAchievementModal(false);
               }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition">Saqlash</button>
             </div>
           </div>
