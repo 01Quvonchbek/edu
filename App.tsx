@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  GraduationCap, 
   Menu, 
   X, 
   ArrowRight, 
@@ -9,7 +8,6 @@ import {
   Mail, 
   Award,
   Users,
-  Clock,
   Phone,
   MapPin,
   Send,
@@ -17,15 +15,11 @@ import {
   Instagram,
   Youtube,
   Facebook,
-  Github,
-  Star,
-  ExternalLink,
   Code2,
-  AlertCircle,
   Newspaper,
   Play,
-  // Added missing Calendar icon
-  Calendar
+  Calendar,
+  ExternalLink
 } from 'lucide-react';
 import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem } from './types';
 import { INITIAL_COURSES, INITIAL_NEWS, ACHIEVEMENTS as INITIAL_ACHIEVEMENTS } from './constants';
@@ -157,6 +151,7 @@ const App: React.FC = () => {
   );
 
   const getYouTubeId = (url: string) => {
+    if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
@@ -188,7 +183,7 @@ const App: React.FC = () => {
         onAddAchievement={(a) => setAchievements([...achievements, a])}
         onUpdateAchievement={(updated) => setAchievements(achievements.map(a => a.id === updated.id ? updated : a))}
         onDeleteAchievement={(id) => setAchievements(achievements.filter(a => a.id !== id))}
-        onAddNews={(item) => setNews([...news, item])}
+        onAddNews={(item) => setNews([item, ...news])}
         onUpdateNews={(updated) => setNews(news.map(n => n.id === updated.id ? updated : n))}
         onDeleteNews={(id) => setNews(news.filter(n => n.id !== id))}
         onDeleteMessage={(id) => setMessages(messages.filter(m => m.id !== id))}
@@ -242,7 +237,7 @@ const App: React.FC = () => {
           <div className="space-y-6 animate-slideUp">
             <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold tracking-wide uppercase">IT Markaz & Portfolio</span>
             <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1]">Yakkabog'da <span className="text-indigo-600">IT ta'lim</span> tizimi</h1>
-            <p className="text-xl text-slate-600 max-w-lg leading-relaxed">Kelajak kasblarini professional mutaxassislar bilan birga o'rganing.</p>
+            <p className="text-xl text-slate-600 max-w-lg leading-relaxed">Kelajak kasblarini professional mutaxassislar bilan birga o'rganing. IT Yakkabog' — sizning raqamli kelajagingiz sari birinchi qadam.</p>
             <button onClick={() => document.getElementById('news')?.scrollIntoView({ behavior: 'smooth' })} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-2 hover:bg-indigo-700 transition shadow-xl shadow-indigo-200">
               <span>Yangiliklar bilan tanishish</span>
               <ArrowRight size={20} />
@@ -267,8 +262,8 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {news.map((item) => (
               <div key={item.id} onClick={() => setSelectedItem({ type: 'news', data: item })} className="group cursor-pointer bg-slate-50 rounded-3xl overflow-hidden border border-slate-100 hover:border-indigo-600 transition-all hover:shadow-xl">
-                <div className="relative h-64 overflow-hidden">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                <div className="relative h-64 overflow-hidden bg-slate-200">
+                  <img src={item.image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
                   {item.videoUrl && (
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                       <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-xl">
@@ -397,7 +392,7 @@ const App: React.FC = () => {
           <div className="bg-white w-full max-w-5xl rounded-[40px] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-slideUp max-h-[90vh] relative">
             {(selectedItem.type === 'course' || selectedItem.type === 'news') && (
               <div className="w-full md:w-2/5 bg-slate-100 relative h-64 md:h-auto overflow-hidden">
-                <img src={selectedItem.data.image} alt={selectedItem.data.title} className="w-full h-full object-cover" />
+                <img src={selectedItem.data.image || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=800'} alt={selectedItem.data.title} className="w-full h-full object-cover" />
               </div>
             )}
             <div className={`w-full flex-1 p-8 md:p-12 overflow-y-auto ${selectedItem.type === 'achievement' ? 'md:w-full' : ''}`}>
@@ -423,7 +418,7 @@ const App: React.FC = () => {
                       allowFullScreen
                     ></iframe>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/40 italic">Havola noto'g'ri</div>
+                    <div className="w-full h-full flex items-center justify-center text-white/40 italic">Havola noto'g'ri yoki qo'llab-quvvatlanmaydi</div>
                   )}
                 </div>
               )}
@@ -435,9 +430,9 @@ const App: React.FC = () => {
               )}
               {selectedItem.type === 'course' && showEnrollForm && (
                 <form onSubmit={handleEnrollSubmit} className="mt-8 p-8 bg-white border-2 border-indigo-100 rounded-[32px] space-y-4 animate-fadeIn">
-                  <input name="name" required type="text" placeholder="Ismingiz" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-3 outline-none" />
-                  <input name="phone" required type="text" placeholder="Telefon" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-3 outline-none" />
-                  <button type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center space-x-2">{enrollStatus === 'sending' ? <Loader2 className="animate-spin" /> : enrollStatus === 'success' ? <CheckCircle /> : <span>Yuborish</span>}</button>
+                  <input name="name" required type="text" placeholder="Ismingiz" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-3 outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input name="phone" required type="text" placeholder="Telefon raqamingiz" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-3 outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <button type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 shadow-lg shadow-indigo-200">{enrollStatus === 'sending' ? <Loader2 className="animate-spin" /> : enrollStatus === 'success' ? <CheckCircle /> : <span>Ariza yuborish</span>}</button>
                 </form>
               )}
             </div>
