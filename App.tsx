@@ -54,28 +54,28 @@ const App: React.FC = () => {
       setIsLoading(true);
       try {
         const { data: c } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
-        if (c && c.length > 0) setCourses(c); else setCourses(INITIAL_COURSES);
+        if (c && c.length > 0) setCourses(c as Course[]); else setCourses(INITIAL_COURSES);
 
         const { data: n } = await supabase.from('news').select('*').order('date', { ascending: false });
-        if (n && n.length > 0) setNews(n); else setNews(INITIAL_NEWS);
+        if (n && n.length > 0) setNews(n as NewsItem[]); else setNews(INITIAL_NEWS);
 
         const { data: a } = await supabase.from('achievements').select('*');
-        if (a && a.length > 0) setAchievements(a); else setAchievements(INITIAL_ACHIEVEMENTS);
+        if (a && a.length > 0) setAchievements(a as Achievement[]); else setAchievements(INITIAL_ACHIEVEMENTS);
 
         const { data: s } = await supabase.from('global_stats').select('*').single();
-        if (s) setGlobalStats(s);
+        if (s) setGlobalStats(s as GlobalStats);
 
         const { data: ci } = await supabase.from('contact_info').select('*').single();
-        if (ci) setContactInfo(ci);
+        if (ci) setContactInfo(ci as ContactInfo);
 
         const { data: m } = await supabase.from('messages').select('*').order('date', { ascending: false });
-        if (m) setMessages(m);
+        if (m) setMessages(m as ContactMessage[]);
 
         const { data: e } = await supabase.from('enrollments').select('*').order('date', { ascending: false });
-        if (e) setEnrollments(e);
+        if (e) setEnrollments(e as CourseEnrollment[]);
 
         const { data: ti } = await supabase.from('teacher_profile').select('image_url').single();
-        if (ti) setTeacherImage(ti.image_url);
+        if (ti?.image_url) setTeacherImage(ti.image_url);
 
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -112,7 +112,7 @@ const App: React.FC = () => {
 
     const { data, error } = await supabase.from('messages').insert([newMessage]).select();
     if (!error && data) {
-      setMessages([data[0], ...messages]);
+      setMessages([data[0] as ContactMessage, ...messages]);
       alert(lang === 'uz' ? "Muvaffaqiyatli yuborildi!" : "Successfully sent!");
       e.currentTarget.reset();
     }
@@ -132,7 +132,7 @@ const App: React.FC = () => {
 
     const { data, error } = await supabase.from('enrollments').insert([newEnroll]).select();
     if (!error && data) {
-      setEnrollments([data[0], ...enrollments]);
+      setEnrollments([data[0] as CourseEnrollment, ...enrollments]);
       alert(lang === 'uz' ? "Arizangiz qabul qilindi!" : "Application received!");
       setShowEnrollForm(false);
       setSelectedItem(null);
@@ -143,7 +143,7 @@ const App: React.FC = () => {
     const el = document.getElementById(id);
     if (el) {
       const offset = 80;
-      const elementPosition = el.getBoundingClientRect().top + window.pageYOffset - offset;
+      const elementPosition = el.getBoundingClientRect().top + window.scrollY - offset;
       window.scrollTo({ top: elementPosition, behavior: 'smooth' });
     }
   };
@@ -181,7 +181,7 @@ const App: React.FC = () => {
         }}
         onAddCourse={async c => {
           const { data } = await supabase.from('courses').insert([c]).select();
-          if (data) setCourses([data[0], ...courses]);
+          if (data) setCourses([data[0] as Course, ...courses]);
         }}
         onUpdateCourse={async u => {
           await supabase.from('courses').update(u).eq('id', u.id);
@@ -193,7 +193,7 @@ const App: React.FC = () => {
         }}
         onAddNews={async n => {
           const { data } = await supabase.from('news').insert([n]).select();
-          if (data) setNews([data[0], ...news]);
+          if (data) setNews([data[0] as NewsItem, ...news]);
         }}
         onUpdateNews={async u => {
           await supabase.from('news').update(u).eq('id', u.id);
@@ -205,7 +205,7 @@ const App: React.FC = () => {
         }}
         onAddAchievement={async a => {
           const { data } = await supabase.from('achievements').insert([a]).select();
-          if (data) setAchievements([data[0], ...achievements]);
+          if (data) setAchievements([data[0] as Achievement, ...achievements]);
         }}
         onUpdateAchievement={async u => {
           await supabase.from('achievements').update(u).eq('id', u.id);
@@ -250,7 +250,7 @@ const App: React.FC = () => {
               { id: 'achievements', label: t.navAchievements },
               { id: 'contact', label: t.navContact }
             ].map(s => (
-              <button key={s.id} onClick={() => { scrollTo(s.id); setActiveSection(s.id as any); }} className={`font-bold text-sm transition-all relative py-2 ${activeSection === s.id ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-500'}`}>
+              <button key={s.id} onClick={() => { scrollTo(s.id); setActiveSection(s.id as AppSection); }} className={`font-bold text-sm transition-all relative py-2 ${activeSection === s.id ? 'text-indigo-600' : 'text-slate-500 hover:text-indigo-500'}`}>
                 {s.label}
                 {activeSection === s.id && <span className="absolute bottom-0 left-0 w-full h-1 bg-indigo-600 rounded-full animate-fadeIn"></span>}
               </button>

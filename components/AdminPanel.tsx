@@ -112,20 +112,20 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{label}</p>
       </div>
       <div className="space-y-3">
-        {['uz', 'ru', 'en'].map((l) => (
+        {(['uz', 'ru', 'en'] as const).map((l) => (
           <div key={l} className="flex gap-2">
             <span className="w-10 shrink-0 flex items-center justify-center font-black text-[10px] uppercase text-slate-400 bg-white border border-slate-200 rounded-xl">{l}</span>
             {isTextArea ? (
               <textarea 
                 className="w-full p-3 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
                 rows={3}
-                value={(value as any)?.[l] || ''} 
+                value={value[l] || ''} 
                 onChange={(e) => onChange({ ...value, [l]: e.target.value })}
               />
             ) : (
               <input 
                 className="w-full p-3 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
-                value={(value as any)?.[l] || ''} 
+                value={value[l] || ''} 
                 onChange={(e) => onChange({ ...value, [l]: e.target.value })}
               />
             )}
@@ -411,10 +411,19 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     {[1, 2, 3, 4].map(num => (
                       <div key={num} className="space-y-6">
-                        <LocalizedInput label={`Karta ${num} Sarlavhasi`} value={(statsForm as any)[`stat${num}Label`]} onChange={val => setStatsForm({...statsForm, [`stat${num}Label`]: val})} />
+                        <LocalizedInput 
+                          label={`Karta ${num} Sarlavhasi`} 
+                          value={statsForm[`stat${num as 1|2|3|4}Label` as keyof GlobalStats] as LocalizedText} 
+                          onChange={val => setStatsForm({...statsForm, [`stat${num as 1|2|3|4}Label`]: val})} 
+                        />
                         <div className="space-y-1 ml-1">
                           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Qiymat (masalan: 98%)</p>
-                          <input type="text" value={(statsForm as any)[`stat${num}Value`]} onChange={e => setStatsForm({...statsForm, [`stat${num}Value`]: e.target.value})} className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                          <input 
+                            type="text" 
+                            value={statsForm[`stat${num as 1|2|3|4}Value` as keyof GlobalStats] as string} 
+                            onChange={e => setStatsForm({...statsForm, [`stat${num as 1|2|3|4}Value`]: e.target.value})} 
+                            className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" 
+                          />
                         </div>
                       </div>
                     ))}

@@ -2,7 +2,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 const getAIClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = (process.env as any).API_KEY;
+  return new GoogleGenAI({ apiKey });
 };
 
 export const generateCourseOutline = async (title: string, category: string) => {
