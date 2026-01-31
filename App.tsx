@@ -77,7 +77,7 @@ const App: React.FC = () => {
         if (ti?.image_url) setTeacherImage(ti.image_url);
 
       } catch (error) {
-        console.error("Data fetching error:", error);
+        console.error("Fetch Error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -86,36 +86,39 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('edu_lang', lang);
-  }, [lang]);
-
-  useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const newMessage = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      message: formData.get('message') as string,
-      date: new Date().toISOString()
-    };
-    const { data, error } = await supabase.from('messages').insert([newMessage]).select();
-    if (!error && data && data[0]) {
-      setMessages([data[0] as ContactMessage, ...messages]);
-      alert(lang === 'uz' ? "Xabar yuborildi!" : (lang === 'ru' ? "Сообщение отправлено!" : "Message sent!"));
-      e.currentTarget.reset();
-    }
-  };
-
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
     setActiveSection(id as AppSection);
+  };
+
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const messageData = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      message: formData.get('message') as string,
+      date: new Date().toLocaleDateString('uz-UZ'),
+    };
+
+    try {
+      const { data, error } = await supabase.from('messages').insert([messageData]).select();
+      if (error) throw error;
+      if (data && data[0]) {
+        setMessages([data[0] as ContactMessage, ...messages]);
+        alert(lang === 'uz' ? 'Xabaringiz yuborildi!' : lang === 'ru' ? 'Ваше сообщение отправлено!' : 'Your message has been sent!');
+        (e.target as HTMLFormElement).reset();
+      }
+    } catch (err) {
+      console.error('Error sending message:', err);
+      alert('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
+    }
   };
 
   if (isLoading) return (
@@ -158,7 +161,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
-      {/* Nav */}
+      {/* Navigation */}
       <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-indigo-50 py-3' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { setLogoClicks(p => p+1); if(logoClicks >= 4) {setActiveSection(AppSection.ADMIN); setLogoClicks(0);} }}>
@@ -170,15 +173,15 @@ const App: React.FC = () => {
           </div>
           <div className="hidden md:flex gap-8 items-center">
             <div className="flex gap-8 font-bold text-sm text-slate-500">
-              <button onClick={() => scrollTo('home')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.HOME ? 'text-indigo-600' : ''}`}>{t.navHome}</button>
-              <button onClick={() => scrollTo('courses')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.COURSES ? 'text-indigo-600' : ''}`}>{t.navCourses}</button>
-              <button onClick={() => scrollTo('news')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.NEWS ? 'text-indigo-600' : ''}`}>{t.navNews}</button>
-              <button onClick={() => scrollTo('achievements')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.ABOUT ? 'text-indigo-600' : ''}`}>{t.navAchievements}</button>
-              <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
+              <button onClick={() => scrollTo('home')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.HOME ? 'text-indigo-600' : ''}`}>{t.navHome}</button>
+              <button onClick={() => scrollTo('courses')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.COURSES ? 'text-indigo-600' : ''}`}>{t.navCourses}</button>
+              <button onClick={() => scrollTo('news')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.NEWS ? 'text-indigo-600' : ''}`}>{t.navNews}</button>
+              <button onClick={() => scrollTo('achievements')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.ABOUT ? 'text-indigo-600' : ''}`}>{t.navAchievements}</button>
+              <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
             </div>
             <div className="flex items-center bg-slate-100 rounded-2xl p-1.5 gap-1 border border-slate-200">
                {(['uz', 'ru', 'en'] as Language[]).map(l => (
-                 <button key={l} onClick={() => setLang(l)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${lang === l ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400'}`}>{l}</button>
+                 <button key={l} onClick={() => setLang(l)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${lang === l ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{l}</button>
                ))}
             </div>
             <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-7 py-3 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all">{t.navEnroll}</button>
@@ -186,7 +189,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* Hero Section */}
       <section id="home" className="relative pt-48 pb-24 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
           <div className="space-y-10 animate-slideUp">
@@ -210,7 +213,25 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Courses */}
+      {/* Statistics */}
+      <section className="py-20 bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+            {[1, 2, 3, 4].map((num) => {
+              const label = (globalStats as any)[`stat${num}Label`][lang];
+              const value = (globalStats as any)[`stat${num}Value`];
+              return (
+                <div key={num} className="space-y-2">
+                  <p className="text-4xl md:text-5xl font-black text-indigo-600">{value}</p>
+                  <p className="text-xs font-black uppercase text-slate-400 tracking-widest">{label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Courses Section */}
       <section id="courses" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-20">
@@ -221,14 +242,14 @@ const App: React.FC = () => {
             {courses.map(c => (
               <div key={c.id} onClick={() => setSelectedItem({type:'course', data:c})} className="group bg-slate-50 rounded-[60px] p-5 border border-slate-100 cursor-pointer hover:shadow-3xl hover:bg-white hover:-translate-y-4 transition-all duration-500">
                 <div className="h-72 w-full rounded-[48px] overflow-hidden mb-8 relative shadow-inner">
-                  <img src={c.image} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title[lang]}/>
+                  <img src={c.image || 'https://via.placeholder.com/400x300'} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title?.[lang]}/>
                   <div className="absolute top-4 left-4">
-                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category[lang]}</span>
+                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category?.[lang] || 'Yo\'nalish'}</span>
                   </div>
                 </div>
                 <div className="px-4 pb-6 space-y-4">
-                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title[lang]}</h3>
-                  <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description[lang]}</p>
+                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title?.[lang] || 'Kurs nomi'}</h3>
+                  <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description?.[lang] || 'Kurs haqida qisqacha...'}</p>
                 </div>
               </div>
             ))}
@@ -236,7 +257,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Achievements */}
+      {/* Achievements Section */}
       <section id="achievements" className="py-32 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
@@ -249,8 +270,8 @@ const App: React.FC = () => {
                 <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform"><Award size={32} /></div>
                 <div className="space-y-2">
                   <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest">{ach.date}</span>
-                  <h3 className="text-2xl font-black text-slate-900 leading-tight">{ach.title[lang]}</h3>
-                  <p className="text-slate-500 text-sm font-medium leading-relaxed">{ach.description[lang]}</p>
+                  <h3 className="text-2xl font-black text-slate-900 leading-tight">{ach.title?.[lang]}</h3>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed">{ach.description?.[lang]}</p>
                 </div>
               </div>
             ))}
@@ -258,35 +279,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* News */}
-      <section id="news" className="py-32 bg-white px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-20">
-            <span className="text-indigo-600 font-black uppercase text-xs tracking-widest">{t.newsSub}</span>
-            <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.newsTitle}</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {news.map(n => (
-              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-slate-50 rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
-                <div className="h-64 rounded-[32px] overflow-hidden mb-6 relative">
-                  <img src={n.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title[lang]} />
-                  <div className="absolute bottom-4 left-4">
-                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-slate-900 text-[10px] font-black uppercase shadow-lg">
-                      <Calendar size={14} className="text-indigo-600"/> {n.date}
-                    </div>
-                  </div>
-                </div>
-                <div className="px-2 pb-2 space-y-3">
-                  <h4 className="font-black text-xl text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">{n.title[lang]}</h4>
-                  <p className="text-slate-500 text-sm line-clamp-2 font-medium">{n.description[lang]}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact */}
+      {/* Contact Section */}
       <section id="contact" className="py-32 px-6 bg-slate-900 relative">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-24 items-center relative z-10">
           <div className="text-white space-y-12">
@@ -339,22 +332,22 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* Detailed Modal */}
+      {/* Modal View */}
       {selectedItem && (
         <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6 animate-fadeIn" onClick={() => setSelectedItem(null)}>
           <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-3xl" onClick={e => e.stopPropagation()}>
             <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden">
-              <img src={selectedItem.data.image} className="w-full h-full object-cover" alt={selectedItem.data.title[lang]}/>
+              <img src={selectedItem.data.image || 'https://via.placeholder.com/800x600'} className="w-full h-full object-cover" alt={selectedItem.data.title?.[lang]}/>
             </div>
             <div className="flex-1 p-14 overflow-y-auto space-y-10">
               <div className="space-y-6">
                 <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100">
-                  {selectedItem.data.category ? selectedItem.data.category[lang] : (lang === 'uz' ? 'Yangilik' : 'News')}
+                  {selectedItem.data.category?.[lang] || 'Ma\'lumot'}
                 </span>
-                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title[lang]}</h2>
+                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title?.[lang] || 'Sarlavha'}</h2>
               </div>
-              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium shadow-inner">
-                 {selectedItem.data.content ? selectedItem.data.content[lang] : selectedItem.data.description[lang]}
+              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium shadow-inner whitespace-pre-line">
+                 {selectedItem.data.content?.[lang] || selectedItem.data.description?.[lang] || 'Tavsif mavjud emas.'}
               </div>
               <button onClick={() => setSelectedItem(null)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">Yopish</button>
             </div>

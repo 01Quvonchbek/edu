@@ -1,17 +1,11 @@
 
-// @ts-ignore
 import { GoogleGenAI, Type } from "@google/genai";
 
-// TypeScript build vaqtida process.env ni tanishi uchun:
-declare const process: any;
-
-const getAIClient = () => {
-  const apiKey = process.env.API_KEY;
-  return new GoogleGenAI({ apiKey });
-};
-
+// Fix Gemini SDK usage based on guidelines for better reliability and performance
 export const generateCourseOutline = async (title: string, category: string) => {
-  const ai = getAIClient();
+  // Always initialize GoogleGenAI with a named parameter apiKey from process.env.API_KEY
+  // Create a new instance right before making an API call to ensure it uses the latest configuration
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -38,6 +32,7 @@ export const generateCourseOutline = async (title: string, category: string) => 
       }
     });
 
+    // Extracting Text Output from GenerateContentResponse: use .text property directly
     const text = response.text;
     if (!text) throw new Error("AI javob bera olmadi.");
     return JSON.parse(text);
