@@ -1,8 +1,10 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
+// TypeScript build vaqtida process.env ni tanishi uchun:
+declare const process: any;
+
 const getAIClient = () => {
-  const apiKey = (process.env as any).API_KEY;
+  const apiKey = process.env.API_KEY;
   return new GoogleGenAI({ apiKey });
 };
 
