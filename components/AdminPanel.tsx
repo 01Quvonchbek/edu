@@ -29,7 +29,8 @@ import {
   Send,
   Check,
   RefreshCw,
-  Globe
+  Globe,
+  Camera
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -95,34 +96,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   });
 
   const [contactData, setContactData] = useState<ContactInfo>(contactInfo);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const profileFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setContactData(contactInfo);
   }, [contactInfo]);
 
-  // GitHub username'ni tozalab olish
-  const cleanGithubUsername = (input: string) => {
-    let clean = input.trim();
-    if (clean.includes('github.com/')) {
-      clean = clean.split('github.com/')[1].split('/')[0];
-    }
-    return clean.replace('@', '');
-  };
-
   const handleSaveContacts = () => {
     setSaveStatus('saving');
-    // Faqat username qoldirish
-    const finalData = {
-      ...contactData,
-      github: cleanGithubUsername(contactData.github)
-    };
-    onUpdateContactInfo(finalData);
-    setContactData(finalData);
-    
+    onUpdateContactInfo(contactData);
     setTimeout(() => {
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     }, 800);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'course' | 'profile') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if (target === 'course') {
+          setCourseFormData({ ...courseFormData, image: base64String });
+        } else {
+          onUpdateTeacherImage(base64String);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const openAddCourseModal = () => {
@@ -156,7 +159,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   return (
     <div className="flex min-h-screen bg-slate-100">
-      {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col fixed inset-y-0 left-0 z-50 shadow-xl lg:shadow-none overflow-y-auto">
         <div className="p-6 flex items-center space-x-2 text-indigo-600">
           <GraduationCap className="w-8 h-8" />
@@ -164,6 +166,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
         <nav className="flex-1 px-4 space-y-1">
           <SidebarItem id={AdminSubSection.DASHBOARD} icon={LayoutDashboard} label="Dashboard" />
+          <SidebarItem id={AdminSubSection.PROFILE_MGMT} icon={UserIcon} label="Profil Rasm" />
           <SidebarItem id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslar" />
           <SidebarItem id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar" />
           <SidebarItem id={AdminSubSection.CONTACT_MGMT} icon={Phone} label="Kontaktlar" />
@@ -179,7 +182,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <main className="flex-1 ml-64 p-8 min-h-screen bg-slate-50">
         <div className="max-w-6xl mx-auto">
           {activeTab === AdminSubSection.DASHBOARD && (
@@ -213,35 +215,48 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
+          {activeTab === AdminSubSection.PROFILE_MGMT && (
+            <div className="max-w-2xl animate-fadeIn space-y-8">
+              <h2 className="text-2xl font-black">Profil ma'lumotlari</h2>
+              <div className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm flex flex-col items-center space-y-8">
+                <div className="relative group">
+                  <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-indigo-100 shadow-xl">
+                    <img src={teacherImage} className="w-full h-full object-cover" alt="Profile" />
+                  </div>
+                  <button 
+                    onClick={() => profileFileInputRef.current?.click()}
+                    className="absolute bottom-2 right-2 p-4 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition"
+                  >
+                    <Camera size={24} />
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={profileFileInputRef} 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={(e) => handleImageUpload(e, 'profile')} 
+                  />
+                </div>
+                <div className="text-center space-y-2">
+                   <p className="text-lg font-bold text-slate-900">Asosiy portret rasmi</p>
+                   <p className="text-sm text-slate-500">Ushbu rasm asosiy sahifada ko'rinadi. Professional ko'rinish uchun sifatli rasm yuklang.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === AdminSubSection.CONTACT_MGMT && (
             <div className="max-w-3xl space-y-8 animate-fadeIn">
-              <h2 className="text-2xl font-black flex items-center gap-2"><Phone className="text-indigo-600" /> Kontakt va Sinxronizatsiya</h2>
+              <h2 className="text-2xl font-black flex items-center gap-2"><Phone className="text-indigo-600" /> Aloqa Ma'lumotlari</h2>
               <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm space-y-6">
-                <div className="p-5 bg-indigo-50 border border-indigo-100 rounded-2xl flex gap-3 text-indigo-900">
-                  <RefreshCw size={24} className="shrink-0 text-indigo-600" />
-                  <div className="space-y-1">
-                    <p className="font-bold">GitHub Sinxronizatsiyasi</p>
-                    <p className="text-sm text-indigo-700">Pastda faqat GitHub foydalanuvchi nomini (username) kiriting. Tizim avtomatik ravishda GitHub'dan loyihalaringizni tortib keladi.</p>
-                  </div>
-                </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold flex items-center space-x-2 text-slate-700"><Github size={16} className="text-slate-900" /> <span>GitHub Username</span></label>
-                    <div className="relative">
-                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">@</span>
-                       <input 
-                        type="text" 
-                        value={contactData.github} 
-                        onChange={(e) => setContactData({...contactData, github: e.target.value})} 
-                        className="w-full pl-10 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition font-bold" 
-                        placeholder="foydalanuvchi_nomi" 
-                       />
-                    </div>
-                  </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold flex items-center space-x-2 text-slate-700"><Mail size={16}/> <span>Email</span></label>
                     <input type="email" value={contactData.email} onChange={(e) => setContactData({...contactData, email: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold flex items-center space-x-2 text-slate-700"><Phone size={16}/> <span>Telefon</span></label>
+                    <input type="text" value={contactData.phone} onChange={(e) => setContactData({...contactData, phone: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
                 </div>
 
@@ -262,8 +277,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <input type="text" value={contactData.facebook} onChange={(e) => setContactData({...contactData, facebook: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold flex items-center space-x-2 text-slate-700"><Phone size={16}/> <span>Telefon</span></label>
-                    <input type="text" value={contactData.phone} onChange={(e) => setContactData({...contactData, phone: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                    <label className="text-sm font-bold flex items-center space-x-2 text-slate-700"><Youtube size={16} className="text-red-600" /> <span>YouTube URL</span></label>
+                    <input type="text" value={contactData.youtube} onChange={(e) => setContactData({...contactData, youtube: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
                 </div>
 
@@ -280,7 +295,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   }`}
                 >
                   {saveStatus === 'saving' ? <Loader2 className="animate-spin" /> : saveStatus === 'saved' ? <Check /> : <Save size={20}/>} 
-                  <span>{saveStatus === 'saved' ? 'Ma\'lumotlar saqlandi!' : 'Saqlash va Sinxronizatsiya qilish'}</span>
+                  <span>{saveStatus === 'saved' ? 'Saqlandi!' : 'Ma\'lumotlarni saqlash'}</span>
                 </button>
               </div>
             </div>
@@ -374,12 +389,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
       </main>
 
-      {/* Course Modal */}
       {showCourseModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
           <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black">Kurs ma'lumotlari</h2><button onClick={() => setShowCourseModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition"><X/></button></div>
             <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400 uppercase ml-1">Kurs rasm (JPG/PNG)</label>
+                <div className="flex gap-4 items-center">
+                  <div className="w-32 h-20 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                    {courseFormData.image ? <img src={courseFormData.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><ImageIcon size={24}/></div>}
+                  </div>
+                  <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-slate-200 transition">
+                    <Upload size={16}/> Tanlash
+                  </button>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'course')} />
+                </div>
+              </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-400 uppercase ml-1">Kurs nomi</label>
                 <input type="text" placeholder="Matematika asoslari" value={courseFormData.title} onChange={e => setCourseFormData({...courseFormData, title: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -394,7 +420,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
               <button onClick={() => {
                  if(editingCourse) onUpdateCourse({...editingCourse, ...courseFormData});
-                 else onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseFormData, students: 0, image: 'https://picsum.photos/seed/edu/800/600', category: 'General'});
+                 else onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseFormData, students: 0, image: courseFormData.image || 'https://picsum.photos/seed/edu/800/600', category: 'General'});
                  setShowCourseModal(false);
               }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition">Saqlash</button>
             </div>

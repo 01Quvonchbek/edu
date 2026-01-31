@@ -18,16 +18,6 @@ export interface Achievement {
   content?: string;
 }
 
-export interface GithubProject {
-  id: number;
-  name: string;
-  description: string;
-  html_url: string;
-  stargazers_count: number;
-  language: string;
-  updated_at: string;
-}
-
 export interface CourseEnrollment {
   id: string;
   courseId: string;
@@ -45,7 +35,6 @@ export interface ContactInfo {
   telegram: string;
   youtube: string;
   facebook: string;
-  github: string; // Bu yerda faqat username saqlanadi
 }
 
 export interface ContactMessage {
@@ -64,7 +53,6 @@ export interface Stat {
 export enum AppSection {
   HOME = 'home',
   COURSES = 'courses',
-  PROJECTS = 'projects',
   ABOUT = 'about',
   CONTACT = 'contact',
   ADMIN = 'admin',

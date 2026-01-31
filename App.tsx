@@ -23,7 +23,7 @@ import {
   Code2,
   AlertCircle
 } from 'lucide-react';
-import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, GithubProject } from './types';
+import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment } from './types';
 import { INITIAL_COURSES, ACHIEVEMENTS as INITIAL_ACHIEVEMENTS } from './constants';
 import AdminPanel from './components/AdminPanel';
 import LoginForm from './components/LoginForm';
@@ -31,7 +31,6 @@ import LoginForm from './components/LoginForm';
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState<AppSection>(AppSection.HOME);
   
-  // Ma'lumotlarni localStorage'dan yuklash yoki default qiymatlarni olish
   const [courses, setCourses] = useState<Course[]>(() => {
     const saved = localStorage.getItem('edu_courses');
     return saved ? JSON.parse(saved) : INITIAL_COURSES;
@@ -51,15 +50,14 @@ const App: React.FC = () => {
       instagram: 'https://instagram.com/eduport',
       telegram: 'https://t.me/eduport_admin',
       youtube: 'https://youtube.com/@eduport',
-      facebook: 'https://facebook.com/eduport',
-      github: 'google'
+      facebook: 'https://facebook.com/eduport'
     };
   });
 
-  const [githubProjects, setGithubProjects] = useState<GithubProject[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [githubError, setGithubError] = useState<string | null>(null);
-  const [teacherImage, setTeacherImage] = useState('https://images.unsplash.com/photo-1544717297-fa15739a5447?auto=format&fit=crop&q=80&w=800');
+  const [teacherImage, setTeacherImage] = useState(() => {
+    return localStorage.getItem('edu_teacher_image') || 'https://images.unsplash.com/photo-1544717297-fa15739a5447?auto=format&fit=crop&q=80&w=800';
+  });
+
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [enrollments, setEnrollments] = useState<CourseEnrollment[]>([]);
   
@@ -73,7 +71,6 @@ const App: React.FC = () => {
   const [showEnrollForm, setShowEnrollForm] = useState(false);
   const [enrollStatus, setEnrollStatus] = useState<'idle' | 'sending' | 'success'>('idle');
 
-  // Ma'lumotlarni saqlash
   useEffect(() => {
     localStorage.setItem('edu_courses', JSON.stringify(courses));
   }, [courses]);
@@ -86,34 +83,9 @@ const App: React.FC = () => {
     localStorage.setItem('edu_contact', JSON.stringify(contactInfo));
   }, [contactInfo]);
 
-  // GitHub Repozitoriyalarini tortish funksiyasi
-  const fetchGithubProjects = async () => {
-    if (!contactInfo.github) return;
-    setIsSyncing(true);
-    setGithubError(null);
-    try {
-      // Username link ko'rinishida bo'lsa, uni tozalash
-      const username = contactInfo.github.replace('https://github.com/', '').replace('/', '').trim();
-      const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=6`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setGithubProjects(data);
-      } else {
-        setGithubProjects([]);
-        setGithubError("GitHub foydalanuvchisi topilmadi yoki xatolik yuz berdi.");
-      }
-    } catch (error) {
-      setGithubError("Internet aloqasini tekshiring.");
-      console.error("GitHub sync error:", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
   useEffect(() => {
-    fetchGithubProjects();
-  }, [contactInfo.github]);
+    localStorage.setItem('edu_teacher_image', teacherImage);
+  }, [teacherImage]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -183,12 +155,6 @@ const App: React.FC = () => {
     </button>
   );
 
-  // GitHub URL yaratish
-  const getGithubUrl = (username: string) => {
-    if (username.startsWith('http')) return username;
-    return `https://github.com/${username}`;
-  };
-
   if (activeSection === AppSection.ADMIN) {
     if (!isLoggedIn) {
       return (
@@ -237,7 +203,6 @@ const App: React.FC = () => {
           <div className="hidden md:flex items-center space-x-2">
             <NavLink id={AppSection.HOME} label="Asosiy" />
             <NavLink id={AppSection.COURSES} label="Kurslar" />
-            <NavLink id={AppSection.PROJECTS} label="Loyihalar" />
             <NavLink id={AppSection.ABOUT} label="Yutuqlar" />
             <NavLink id={AppSection.CONTACT} label="Aloqa" />
           </div>
@@ -247,13 +212,11 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-40 bg-white pt-24 px-6 md:hidden animate-fadeIn">
           <div className="flex flex-col space-y-4">
              <NavLink id={AppSection.HOME} label="Asosiy" />
              <NavLink id={AppSection.COURSES} label="Kurslar" />
-             <NavLink id={AppSection.PROJECTS} label="Loyihalar" />
              <NavLink id={AppSection.ABOUT} label="Yutuqlar" />
              <NavLink id={AppSection.CONTACT} label="Aloqa" />
           </div>
@@ -301,57 +264,13 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* GitHub Loyihalar Bo'limi */}
-      <section id="projects" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div className="space-y-2">
-              <h2 className="text-4xl font-black text-slate-900">GitHub Loyihalar</h2>
-              <p className="text-slate-600">Foydalanuvchi: <span className="font-bold text-indigo-600">@{contactInfo.github.replace('https://github.com/', '').replace('/', '')}</span></p>
-            </div>
-            {isSyncing && <div className="flex items-center gap-2 text-indigo-600 font-bold"><Loader2 className="animate-spin" /> Sinxronizatsiya...</div>}
-          </div>
-          
-          {githubProjects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {githubProjects.map((project) => (
-                <a key={project.id} href={project.html_url} target="_blank" rel="noopener noreferrer" className="group bg-slate-50 border border-slate-100 p-8 rounded-[32px] hover:bg-indigo-600 hover:border-indigo-600 transition-all duration-300 flex flex-col h-full">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 group-hover:text-white group-hover:bg-white/20 transition-colors">
-                      <Code2 size={24} />
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-500 group-hover:text-white/80 font-bold">
-                      <Star size={18} fill="currentColor" />
-                      <span>{project.stargazers_count}</span>
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-white mb-2">{project.name}</h3>
-                  <p className="text-slate-600 group-hover:text-white/80 text-sm mb-6 line-clamp-3 flex-grow">{project.description || "Tavsif mavjud emas."}</p>
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 group-hover:border-white/20">
-                    <span className="text-xs font-black uppercase tracking-wider text-indigo-600 group-hover:text-white/60">{project.language || "Boshqa"}</span>
-                    <ExternalLink size={18} className="text-slate-400 group-hover:text-white" />
-                  </div>
-                </a>
-              ))}
-            </div>
-          ) : !isSyncing && (
-            <div className="bg-rose-50 border border-rose-100 p-12 rounded-[40px] text-center max-w-2xl mx-auto">
-              <AlertCircle size={48} className="mx-auto text-rose-300 mb-4" />
-              <p className="text-rose-900 font-bold text-xl">{githubError || "Loyihalar topilmadi"}</p>
-              <p className="text-rose-600 mt-2">Admin panelidan GitHub foydalanuvchi nomini to'g'ri kiritganingizni tekshiring.</p>
-              <button onClick={fetchGithubProjects} className="mt-6 px-6 py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition">Qayta urinish</button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section id="about" className="py-24 bg-slate-50">
+      <section id="about" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <h2 className="text-4xl font-black text-slate-900 mb-12">Yutuqlar</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {achievements.map((ach) => (
-              <div key={ach.id} onClick={() => setSelectedItem({ type: 'achievement', data: ach })} className="group cursor-pointer flex space-x-4 p-8 rounded-3xl bg-white border border-slate-100 hover:bg-indigo-50 transition-all">
-                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-indigo-600 flex-shrink-0 shadow-sm"><Award size={28} /></div>
+              <div key={ach.id} onClick={() => setSelectedItem({ type: 'achievement', data: ach })} className="group cursor-pointer flex space-x-4 p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:bg-indigo-50 transition-all">
+                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-indigo-600 flex-shrink-0 shadow-sm"><Award size={28} /></div>
                 <div>
                   <span className="text-indigo-600 text-xs font-black uppercase">{ach.date}</span>
                   <h3 className="font-bold text-xl text-slate-900 mb-2">{ach.title}</h3>
@@ -363,31 +282,31 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      <section id="contact" className="py-24 bg-white border-t border-slate-100">
+      <section id="contact" className="py-24 bg-slate-50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid md:grid-cols-2 gap-16">
             <div className="space-y-8">
               <h2 className="text-4xl font-black text-slate-900">Aloqa</h2>
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-indigo-600"><MapPin size={24} /></div>
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600"><MapPin size={24} /></div>
                   <p className="text-slate-900 font-medium">{contactInfo.address}</p>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-indigo-600"><Mail size={24} /></div>
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600"><Mail size={24} /></div>
                   <p className="text-slate-900 font-medium">{contactInfo.email}</p>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-indigo-600"><Phone size={24} /></div>
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600"><Phone size={24} /></div>
                   <p className="text-slate-900 font-medium">{contactInfo.phone}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-slate-50 p-8 md:p-12 rounded-[40px] shadow-sm border border-slate-100">
+            <div className="bg-white p-8 md:p-12 rounded-[40px] shadow-sm border border-slate-100">
               <form onSubmit={handleSendMessage} className="space-y-6">
-                <input name="name" type="text" required placeholder="Ismingiz" className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500" />
-                <input name="email" type="email" required placeholder="Email" className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500" />
-                <textarea name="message" required placeholder="Xabaringiz" rows={4} className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                <input name="name" type="text" required placeholder="Ismingiz" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input name="email" type="email" required placeholder="Email" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500" />
+                <textarea name="message" required placeholder="Xabaringiz" rows={4} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                 <button type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition shadow-lg">{formStatus === 'sending' ? 'Yuborilmoqda...' : 'Xabar yuborish'}</button>
               </form>
             </div>
@@ -415,9 +334,6 @@ const App: React.FC = () => {
              <a href={contactInfo.facebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition-all duration-300 shadow-lg" title="Facebook">
                 <Facebook size={28} />
              </a>
-             <a href={getGithubUrl(contactInfo.github)} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all duration-300 shadow-lg" title="GitHub">
-                <Github size={28} />
-             </a>
              <a href={`mailto:${contactInfo.email}`} className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-indigo-600 hover:-translate-y-1 transition-all duration-300 shadow-lg" title="Email">
                 <Mail size={28} />
              </a>
@@ -426,7 +342,6 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* Tafsilotlar Modali */}
       {selectedItem && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-xl p-4 md:p-8 animate-fadeIn">
           <div className="bg-white w-full max-w-5xl rounded-[40px] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-slideUp max-h-[90vh] relative">
