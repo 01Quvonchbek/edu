@@ -39,7 +39,10 @@ const App: React.FC = () => {
     address: 'Yakkabog\' tumani, Markaziy IT bino', 
     email: 'it-yakkabog@edu.uz', 
     phone: '+998 90 123 45 67', 
-    instagram: '#', telegram: '#', youtube: '#', facebook: '#' 
+    instagram: 'https://instagram.com', 
+    telegram: 'https://t.me', 
+    youtube: 'https://youtube.com', 
+    facebook: 'https://facebook.com' 
   });
   const [teacherImage, setTeacherImage] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800');
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -147,6 +150,13 @@ const App: React.FC = () => {
     );
   }
 
+  const socialLinks = [
+    { Icon: Instagram, link: contactInfo.instagram, color: 'hover:bg-pink-600', label: 'Instagram' },
+    { Icon: Send, link: contactInfo.telegram, color: 'hover:bg-blue-500', label: 'Telegram' },
+    { Icon: Youtube, link: contactInfo.youtube, color: 'hover:bg-red-600', label: 'Youtube' },
+    { Icon: Facebook, link: contactInfo.facebook, color: 'hover:bg-blue-700', label: 'Facebook' }
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
       {/* Navigation */}
@@ -171,7 +181,6 @@ const App: React.FC = () => {
               <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
             </div>
             
-            {/* Language Switcher */}
             <div className="flex items-center bg-slate-100 rounded-2xl p-1.5 gap-1 border border-slate-200">
                {(['uz', 'ru', 'en'] as Language[]).map(l => (
                  <button 
@@ -230,7 +239,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Courses */}
+      {/* Courses Section */}
       <section id="courses" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
@@ -238,7 +247,6 @@ const App: React.FC = () => {
               <span className="text-indigo-600 font-black uppercase text-xs tracking-widest block">{t.coursesSub}</span>
               <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.coursesTitle}</h2>
             </div>
-            <p className="text-slate-500 font-medium max-w-md">{lang === 'uz' ? "Bizning barcha kurslarimiz zamonaviy metodika va amaliyotga asoslangan." : "Все наши курсы основаны на современной методике и практике."}</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
             {courses.map(c => (
@@ -252,12 +260,6 @@ const App: React.FC = () => {
                 <div className="px-4 pb-6 space-y-4">
                   <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title[lang]}</h3>
                   <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description[lang]}</p>
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                    <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs uppercase tracking-widest">
-                       {t.courseMore} <ChevronRight size={16}/>
-                    </div>
-                    <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{c.duration[lang]}</span>
-                  </div>
                 </div>
               </div>
             ))}
@@ -265,25 +267,8 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-24 bg-slate-900 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-          {[
-            { val: globalStats.stat1Value, label: globalStats.stat1Label[lang] },
-            { val: globalStats.stat2Value, label: globalStats.stat2Label[lang] },
-            { val: globalStats.stat3Value, label: globalStats.stat3Label[lang] },
-            { val: globalStats.stat4Value, label: globalStats.stat4Label[lang] }
-          ].map((s, i) => (
-            <div key={i} className="space-y-3">
-              <p className="text-5xl font-black text-white tracking-tighter">{s.val}</p>
-              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Achievements Section */}
-      <section id="achievements" className="py-32 bg-white px-6">
+      <section id="achievements" className="py-32 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center text-center space-y-4 mb-20">
             <span className="text-indigo-600 font-black uppercase text-xs tracking-widest block">{t.achievementsSub}</span>
@@ -291,14 +276,12 @@ const App: React.FC = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {achievements.map((ach) => (
-              <div key={ach.id} className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 space-y-6 hover:shadow-2xl transition-all group">
+              <div key={ach.id} className="bg-white p-10 rounded-[48px] border border-slate-100 space-y-6 hover:shadow-2xl transition-all group">
                 <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                   <Award size={32} />
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest">{ach.date}</span>
-                  </div>
+                  <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest">{ach.date}</span>
                   <h3 className="text-2xl font-black text-slate-900 leading-tight">{ach.title[lang]}</h3>
                   <p className="text-slate-500 text-sm font-medium leading-relaxed">{ach.description[lang]}</p>
                 </div>
@@ -308,8 +291,8 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* News */}
-      <section id="news" className="py-32 bg-slate-50 px-6">
+      {/* News Section */}
+      <section id="news" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
             <span className="text-indigo-600 font-black uppercase text-xs tracking-widest">{t.newsSub}</span>
@@ -317,9 +300,9 @@ const App: React.FC = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {news.map(n => (
-              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-white rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
+              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-slate-50 rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
                 <div className="h-64 rounded-[32px] overflow-hidden mb-6 relative">
-                  <img src={n.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                  <img src={n.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title[lang]} />
                   <div className="absolute bottom-4 left-4">
                     <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-slate-900 text-[10px] font-black uppercase shadow-lg">
                       <Calendar size={14} className="text-indigo-600"/> {n.date}
@@ -336,11 +319,10 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Contact */}
+      {/* Contact Section */}
       <section id="contact" className="py-32 px-6 bg-slate-900 overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-full bg-indigo-600/5 -z-10"></div>
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-24 items-center relative z-10">
-          <div className="text-white space-y-12 animate-fadeIn">
+          <div className="text-white space-y-12">
             <h2 className="text-7xl font-black tracking-tighter leading-none">{t.contactTitle}</h2>
             <div className="space-y-8">
               <div className="flex items-center gap-8">
@@ -356,16 +338,25 @@ const App: React.FC = () => {
                 <div><p className="text-white/40 text-[10px] font-black tracking-widest uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
               </div>
             </div>
-            <div className="flex gap-4 pt-4">
-               {[Instagram, Youtube, Facebook, Send].map((Icon, i) => (
-                 <a key={i} href="#" className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-indigo-600 hover:border-indigo-500 transition-all text-white/60 hover:text-white">
-                   <Icon size={20}/>
+            
+            {/* Social Media Links Tiklandi */}
+            <div className="flex gap-4 pt-6">
+               {socialLinks.map(({Icon, link, color, label}, i) => (
+                 <a 
+                   key={i} 
+                   href={link} 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   className={`w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center transition-all text-white/60 hover:text-white ${color} hover:scale-110`}
+                   title={label}
+                 >
+                   <Icon size={24}/>
                  </a>
                ))}
             </div>
           </div>
           
-          <div className="bg-white p-12 rounded-[64px] shadow-3xl animate-slideUp">
+          <div className="bg-white p-12 rounded-[64px] shadow-3xl">
             <h3 className="text-3xl font-black text-slate-900 mb-8">{t.contactFormTitle}</h3>
             <form onSubmit={handleSendMessage} className="space-y-5">
               <div className="grid md:grid-cols-2 gap-5">
@@ -395,7 +386,7 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* Detailed Modal */}
+      {/* Detailed Modal (Courses & News) Tiklandi */}
       {selectedItem && (
         <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6 animate-fadeIn" onClick={() => setSelectedItem(null)}>
           <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-3xl animate-bounceIn" onClick={e => e.stopPropagation()}>
@@ -407,26 +398,15 @@ const App: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                    <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase shadow-sm border border-indigo-100">
-                     {selectedItem.data.category ? selectedItem.data.category[lang] : (lang === 'uz' ? 'Yangiliklar' : 'Новости')}
+                     {selectedItem.data.category ? selectedItem.data.category[lang] : (lang === 'uz' ? 'Yangilik' : lang === 'ru' ? 'Новость' : 'News')}
                    </span>
-                   {selectedItem.data.duration && <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{selectedItem.data.duration[lang]}</span>}
+                   {selectedItem.data.date && <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{selectedItem.data.date}</span>}
                 </div>
                 <h2 className="text-5xl font-black text-slate-900 leading-tight tracking-tight">{selectedItem.data.title[lang]}</h2>
               </div>
-              
-              <div className="prose prose-slate max-w-none">
-                <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium shadow-inner">
-                   {(selectedItem.data.content?.[lang]) || (selectedItem.data.description?.[lang])}
-                </div>
+              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium shadow-inner">
+                 {selectedItem.data.content ? selectedItem.data.content[lang] : selectedItem.data.description[lang]}
               </div>
-
-              {selectedItem.type === 'course' && (
-                <div className="pt-6 border-t border-slate-100">
-                  <button onClick={() => { scrollTo('contact'); setSelectedItem(null); }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">
-                    {t.navEnroll}
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
