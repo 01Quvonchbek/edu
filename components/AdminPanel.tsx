@@ -41,19 +41,25 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [courseForm, setCourseForm] = useState<Partial<Course>>({});
 
+  const [showNewsModal, setShowNewsModal] = useState(false);
+  const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
+  const [newsForm, setNewsForm] = useState<Partial<NewsItem>>({});
+
   const [contactForm, setContactForm] = useState<ContactInfo>(props.contactInfo);
   const [statsForm, setStatsForm] = useState<GlobalStats>(props.globalStats);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const newsFileInputRef = useRef<HTMLInputElement>(null);
   const profileFileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'course' | 'profile') => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'course' | 'profile' | 'news') => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const url = reader.result as string;
         if (target === 'course') setCourseForm(p => ({ ...p, image: url }));
+        else if (target === 'news') setNewsForm(p => ({ ...p, image: url }));
         else if (target === 'profile') props.onUpdateTeacherImage(url);
       };
       reader.readAsDataURL(file);
@@ -92,7 +98,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
           <SidebarBtn id={AdminSubSection.DASHBOARD} icon={LayoutDashboard} label="Boshqaruv" />
           <SidebarBtn id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslar" count={props.courses.length} />
-          <SidebarBtn id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" />
+          <SidebarBtn id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" count={props.news.length} />
           <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar" />
           <SidebarBtn id={AdminSubSection.ENROLLMENTS} icon={UserCheck} label="Arizalar" count={props.enrollments.length} />
           <SidebarBtn id={AdminSubSection.MESSAGES} icon={MessageSquare} label="Xabarlar" count={props.messages.length} />
@@ -146,6 +152,32 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
                   <div key={c.id} className="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-4"><img src={c.image || 'https://via.placeholder.com/64'} className="w-16 h-16 rounded-xl object-cover" /><h4 className="font-bold line-clamp-1">{c.title?.uz || 'Nomsiz kurs'}</h4></div>
                     <div className="flex gap-2"><button onClick={() => { setEditingCourse(c); setCourseForm(c); setShowCourseModal(true); }} className="p-3 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-xl transition-colors"><Edit3 size={16}/></button><button onClick={() => { if(confirm('Kurs o\'chirilsinmi?')) props.onDeleteCourse(c.id); }} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors"><Trash2 size={16}/></button></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.NEWS_MGMT && (
+            <div className="animate-fadeIn space-y-8">
+              <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-black">Yangiliklar boshqaruvi</h2>
+                <button onClick={() => { setEditingNews(null); setNewsForm({ title: emptyLocalized(), description: emptyLocalized(), content: emptyLocalized(), image: '', date: new Date().toLocaleDateString('uz-UZ') }); setShowNewsModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all"><Plus size={18}/> Yangi Yangilik</button>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                {props.news.map(n => (
+                  <div key={n.id} className="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4">
+                      <img src={n.image || 'https://via.placeholder.com/64'} className="w-16 h-16 rounded-xl object-cover" />
+                      <div>
+                        <h4 className="font-bold line-clamp-1">{n.title?.uz || 'Nomsiz yangilik'}</h4>
+                        <p className="text-[10px] font-bold text-slate-400">{n.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingNews(n); setNewsForm(n); setShowNewsModal(true); }} className="p-3 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-xl transition-colors"><Edit3 size={16}/></button>
+                      <button onClick={() => { if(confirm('O\'chirilsinmi?')) props.onDeleteNews(n.id); }} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors"><Trash2 size={16}/></button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -235,6 +267,38 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
               else props.onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseForm} as Course); 
               setShowCourseModal(false); 
             }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-xl hover:bg-indigo-700 transition-all">O'zgarishlarni saqlash</button>
+          </div>
+        </div>
+      )}
+
+      {/* News Editor Modal */}
+      {showNewsModal && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
+          <div className="bg-white rounded-[48px] p-12 w-full max-w-5xl max-h-[90vh] overflow-y-auto space-y-10 shadow-3xl">
+            <div className="flex justify-between items-center border-b pb-6"><h2 className="text-3xl font-black">{editingNews ? 'Yangilikni tahrirlash' : 'Yangi yangilik qo\'shish'}</h2><button onClick={() => setShowNewsModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X/></button></div>
+            <div className="grid md:grid-cols-2 gap-10">
+              <div className="space-y-6">
+                <div className="p-8 bg-slate-50 rounded-[40px] flex flex-col items-center gap-4 border border-slate-100 shadow-inner">
+                  {newsForm.image ? <img src={newsForm.image} className="w-full aspect-video rounded-3xl object-cover shadow-lg" /> : <div className="w-full aspect-video rounded-3xl bg-slate-200 flex items-center justify-center font-bold text-slate-400">Rasm tanlanmagan</div>}
+                  <button onClick={() => newsFileInputRef.current?.click()} className="text-indigo-600 font-black hover:underline transition-all">Rasm yuklash</button>
+                  <input type="file" ref={newsFileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'news')} />
+                </div>
+                <LocalizedInput label="Yangilik sarlavhasi" value={newsForm.title as LocalizedText} onChange={val => setNewsForm({...newsForm, title: val})} />
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Sana</p>
+                  <input type="text" value={newsForm.date} onChange={e => setNewsForm({...newsForm, date: e.target.value})} className="w-full p-2 bg-white rounded-lg outline-none border border-slate-200" placeholder="DD.MM.YYYY" />
+                </div>
+              </div>
+              <div className="space-y-6">
+                <LocalizedInput label="Qisqa tavsif" value={newsForm.description as LocalizedText} onChange={val => setNewsForm({...newsForm, description: val})} isTextArea />
+                <LocalizedInput label="To'liq matn (Content)" value={newsForm.content as LocalizedText} onChange={val => setNewsForm({...newsForm, content: val})} isTextArea />
+              </div>
+            </div>
+            <button onClick={() => { 
+              if(editingNews) props.onUpdateNews({...editingNews, ...newsForm} as NewsItem); 
+              else props.onAddNews({id: Math.random().toString(36).substr(2,9), ...newsForm} as NewsItem); 
+              setShowNewsModal(false); 
+            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-xl hover:bg-indigo-700 transition-all">Yangilikni saqlash</button>
           </div>
         </div>
       )}

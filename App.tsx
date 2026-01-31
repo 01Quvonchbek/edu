@@ -117,7 +117,6 @@ const App: React.FC = () => {
       }
     } catch (err) {
       console.error('Error sending message:', err);
-      alert('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
     }
   };
 
@@ -161,7 +160,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
-      {/* Navigation */}
       <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-indigo-50 py-3' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { setLogoClicks(p => p+1); if(logoClicks >= 4) {setActiveSection(AppSection.ADMIN); setLogoClicks(0);} }}>
@@ -171,25 +169,23 @@ const App: React.FC = () => {
               <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Innovation Academy</span>
             </div>
           </div>
-          <div className="hidden md:flex gap-8 items-center">
-            <div className="flex gap-8 font-bold text-sm text-slate-500">
-              <button onClick={() => scrollTo('home')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.HOME ? 'text-indigo-600' : ''}`}>{t.navHome}</button>
-              <button onClick={() => scrollTo('courses')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.COURSES ? 'text-indigo-600' : ''}`}>{t.navCourses}</button>
-              <button onClick={() => scrollTo('news')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.NEWS ? 'text-indigo-600' : ''}`}>{t.navNews}</button>
-              <button onClick={() => scrollTo('achievements')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.ABOUT ? 'text-indigo-600' : ''}`}>{t.navAchievements}</button>
-              <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
-            </div>
-            <div className="flex items-center bg-slate-100 rounded-2xl p-1.5 gap-1 border border-slate-200">
+          <div className="hidden md:flex gap-8 items-center font-bold text-sm text-slate-500">
+            <button onClick={() => scrollTo('home')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.HOME ? 'text-indigo-600' : ''}`}>{t.navHome}</button>
+            <button onClick={() => scrollTo('courses')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.COURSES ? 'text-indigo-600' : ''}`}>{t.navCourses}</button>
+            <button onClick={() => scrollTo('news')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.NEWS ? 'text-indigo-600' : ''}`}>{t.navNews}</button>
+            <button onClick={() => scrollTo('achievements')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.ABOUT ? 'text-indigo-600' : ''}`}>{t.navAchievements}</button>
+            <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
+            <div className="flex items-center bg-slate-100 rounded-2xl p-1.5 gap-1 border border-slate-200 ml-4">
                {(['uz', 'ru', 'en'] as Language[]).map(l => (
                  <button key={l} onClick={() => setLang(l)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${lang === l ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{l}</button>
                ))}
             </div>
-            <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-7 py-3 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all">{t.navEnroll}</button>
+            <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-7 py-3 rounded-2xl font-black ml-4 hover:bg-indigo-600 transition-all">{t.navEnroll}</button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section id="home" className="relative pt-48 pb-24 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
           <div className="space-y-10 animate-slideUp">
@@ -213,7 +209,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Statistics */}
+      {/* Stats */}
       <section className="py-20 bg-white border-y border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
@@ -231,7 +227,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Courses Section */}
+      {/* Courses */}
       <section id="courses" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-20">
@@ -244,12 +240,12 @@ const App: React.FC = () => {
                 <div className="h-72 w-full rounded-[48px] overflow-hidden mb-8 relative shadow-inner">
                   <img src={c.image || 'https://via.placeholder.com/400x300'} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title?.[lang]}/>
                   <div className="absolute top-4 left-4">
-                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category?.[lang] || 'Yo\'nalish'}</span>
+                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category?.[lang]}</span>
                   </div>
                 </div>
                 <div className="px-4 pb-6 space-y-4">
-                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title?.[lang] || 'Kurs nomi'}</h3>
-                  <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description?.[lang] || 'Kurs haqida qisqacha...'}</p>
+                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title?.[lang]}</h3>
+                  <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description?.[lang]}</p>
                 </div>
               </div>
             ))}
@@ -257,7 +253,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Achievements Section */}
+      {/* Achievements */}
       <section id="achievements" className="py-32 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
@@ -272,6 +268,34 @@ const App: React.FC = () => {
                   <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest">{ach.date}</span>
                   <h3 className="text-2xl font-black text-slate-900 leading-tight">{ach.title?.[lang]}</h3>
                   <p className="text-slate-500 text-sm font-medium leading-relaxed">{ach.description?.[lang]}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* News Section - TIklandi */}
+      <section id="news" className="py-32 bg-white px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-20">
+            <span className="text-indigo-600 font-black uppercase text-xs tracking-widest">{t.newsSub}</span>
+            <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.newsTitle}</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {news.map(n => (
+              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-slate-50 rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
+                <div className="h-64 rounded-[32px] overflow-hidden mb-6 relative">
+                  <img src={n.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title?.[lang]} />
+                  <div className="absolute bottom-4 left-4">
+                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-slate-900 text-[10px] font-black uppercase shadow-lg">
+                      <Calendar size={14} className="text-indigo-600"/> {n.date}
+                    </div>
+                  </div>
+                </div>
+                <div className="px-2 pb-2 space-y-3">
+                  <h4 className="font-black text-xl text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">{n.title?.[lang]}</h4>
+                  <p className="text-slate-500 text-sm line-clamp-2 font-medium">{n.description?.[lang]}</p>
                 </div>
               </div>
             ))}
