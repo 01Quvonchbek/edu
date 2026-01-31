@@ -1,3 +1,5 @@
+
+// @ts-ignore
 import { GoogleGenAI, Type } from "@google/genai";
 
 // TypeScript build vaqtida process.env ni tanishi uchun:
