@@ -34,13 +34,13 @@ const App: React.FC = () => {
   const [globalStats, setGlobalStats] = useState<GlobalStats>(() => {
     const s = localStorage.getItem('edu_global_stats');
     return s ? JSON.parse(s) : {
-      stat1Label: 'Ish bilan ta\'minlash',
+      stat1Label: { uz: 'Ish bilan ta\'minlash', ru: 'Трудоустройство', en: 'Job Placement' },
       stat1Value: '98%',
-      stat2Label: 'IT Yo\'nalishlar',
+      stat2Label: { uz: 'IT Yo\'nalishlar', ru: 'IT Направления', en: 'IT Directions' },
       stat2Value: '15+',
-      stat3Label: 'Mentorlar',
+      stat3Label: { uz: 'Mentorlar', ru: 'Менторы', en: 'Mentors' },
       stat3Value: '50+',
-      stat4Label: 'IELTS 7.0+',
+      stat4Label: { uz: 'IELTS 7.0+', ru: 'IELTS 7.0+', en: 'IELTS 7.0+' },
       stat4Value: '200+'
     };
   });
@@ -108,7 +108,7 @@ const App: React.FC = () => {
     const newEnroll: CourseEnrollment = {
       id: Math.random().toString(36).substr(2, 9),
       courseId: selectedItem.data.id,
-      courseTitle: selectedItem.data.title,
+      courseTitle: selectedItem.data.title[lang],
       studentName: formData.get('name') as string,
       studentPhone: formData.get('phone') as string,
       date: new Date().toLocaleString()
@@ -258,18 +258,18 @@ const App: React.FC = () => {
                 className="group bg-slate-50 rounded-[56px] overflow-hidden border border-slate-100 p-4 cursor-pointer hover:shadow-3xl hover:bg-white hover:-translate-y-3 transition-all duration-500"
               >
                 <div className="h-64 w-full rounded-[44px] overflow-hidden relative shadow-inner">
-                  <img src={c.image} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title}/>
+                  <img src={c.image} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title[lang]}/>
                   <div className="absolute top-4 left-4">
-                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category}</span>
+                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category[lang]}</span>
                   </div>
                 </div>
                 <div className="p-8 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-1.5 text-slate-400 text-xs font-bold"><Users size={14}/> {c.students}+ {t.courseStudents}</span>
-                    <span className="text-indigo-600 font-bold text-xs">{c.duration}</span>
+                    <span className="text-indigo-600 font-bold text-xs">{c.duration[lang]}</span>
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">{c.title}</h3>
-                  <p className="text-slate-500 line-clamp-2 text-sm font-medium leading-relaxed">{c.description}</p>
+                  <h3 className="text-2xl font-black text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">{c.title[lang]}</h3>
+                  <p className="text-slate-500 line-clamp-2 text-sm font-medium leading-relaxed">{c.description[lang]}</p>
                   <div className="pt-4 flex items-center gap-2 text-indigo-600 font-black text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                     {t.courseMore} <ChevronRight size={16}/>
                   </div>
@@ -297,7 +297,7 @@ const App: React.FC = () => {
                 className="bg-white rounded-[40px] p-4 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all duration-500"
               >
                 <div className="h-64 rounded-[32px] overflow-hidden relative shadow-lg">
-                  <img src={n.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title}/>
+                  <img src={n.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title[lang]}/>
                   <div className="absolute bottom-4 left-4">
                     <div className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md rounded-2xl text-slate-900 text-[10px] font-black uppercase shadow-lg border border-white/50">
                       <Calendar size={14} className="text-indigo-600"/> {n.date}
@@ -305,8 +305,8 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 <div className="p-6 space-y-3">
-                  <h3 className="text-xl font-black text-slate-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">{n.title}</h3>
-                  <p className="text-slate-500 text-sm font-medium line-clamp-2">{n.description}</p>
+                  <h3 className="text-xl font-black text-slate-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">{n.title[lang]}</h3>
+                  <p className="text-slate-500 text-sm font-medium line-clamp-2">{n.description[lang]}</p>
                 </div>
               </div>
             ))}
@@ -328,14 +328,14 @@ const App: React.FC = () => {
                 {achievements.map((a) => (
                   <div key={a.id} className="flex gap-6 group p-6 rounded-3xl hover:bg-slate-50 transition-colors">
                     <div className="shrink-0 w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm">
-                      <Trophy size={28}/>
+                      < Trophy size={28}/>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{a.date}</span>
-                        <h4 className="text-xl font-black text-slate-900">{a.title}</h4>
+                        <h4 className="text-xl font-black text-slate-900">{a.title[lang]}</h4>
                       </div>
-                      <p className="text-slate-500 font-medium text-sm leading-relaxed">{a.description}</p>
+                      <p className="text-slate-500 font-medium text-sm leading-relaxed">{a.description[lang]}</p>
                     </div>
                   </div>
                 ))}
@@ -347,21 +347,21 @@ const App: React.FC = () => {
                 <div className="space-y-6 pt-12">
                   <div className="bg-indigo-600 p-8 rounded-[48px] text-white shadow-2xl">
                     <h5 className="text-4xl font-black mb-1">{globalStats.stat1Value}</h5>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{globalStats.stat1Label}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{globalStats.stat1Label[lang]}</p>
                   </div>
                   <div className="bg-white p-8 rounded-[48px] border border-slate-100 shadow-xl">
                     <h5 className="text-4xl font-black text-slate-900 mb-1">{globalStats.stat2Value}</h5>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{globalStats.stat2Label}</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{globalStats.stat2Label[lang]}</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="bg-slate-900 p-8 rounded-[48px] text-white shadow-2xl">
                     <h5 className="text-4xl font-black mb-1">{globalStats.stat3Value}</h5>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{globalStats.stat3Label}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{globalStats.stat3Label[lang]}</p>
                   </div>
                   <div className="bg-indigo-50 p-8 rounded-[48px] border border-indigo-100">
                     <h5 className="text-4xl font-black text-indigo-600 mb-1">{globalStats.stat4Value}</h5>
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{globalStats.stat4Label}</p>
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{globalStats.stat4Label[lang]}</p>
                   </div>
                 </div>
               </div>
@@ -421,15 +421,15 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
           <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-slideUp">
             <div className="w-full md:w-2/5 h-64 md:h-auto relative">
-              <img src={selectedItem.data.image} className="w-full h-full object-cover" alt={selectedItem.data.title}/>
+              <img src={selectedItem.data.image} className="w-full h-full object-cover" alt={selectedItem.data.title[lang]}/>
               <button onClick={() => { setSelectedItem(null); setShowEnrollForm(false); }} className="absolute top-6 left-6 p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 border border-white/30"><X size={24}/></button>
             </div>
             <div className="flex-1 p-12 overflow-y-auto">
               <div className="mb-8 space-y-4">
-                <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase shadow-sm">{selectedItem.data.category}</span>
-                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title}</h2>
+                <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase shadow-sm">{selectedItem.data.category[lang]}</span>
+                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title[lang]}</h2>
               </div>
-              <div className="whitespace-pre-wrap text-slate-700 leading-relaxed text-lg font-medium bg-slate-50 p-8 rounded-[40px] border border-slate-100">{selectedItem.data.content || selectedItem.data.description}</div>
+              <div className="whitespace-pre-wrap text-slate-700 leading-relaxed text-lg font-medium bg-slate-50 p-8 rounded-[40px] border border-slate-100">{(selectedItem.data.content?.[lang]) || (selectedItem.data.description?.[lang])}</div>
               {selectedItem.type === 'course' && !showEnrollForm && (
                 <div className="mt-12 pt-8 border-t border-slate-100">
                   <button onClick={() => setShowEnrollForm(true)} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:scale-[1.02] transition-all">{t.navEnroll}</button>

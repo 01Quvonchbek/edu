@@ -1,41 +1,47 @@
 
 export type Language = 'uz' | 'ru' | 'en';
 
+export type LocalizedText = {
+  uz: string;
+  ru: string;
+  en: string;
+};
+
 export interface Course {
   id: string;
-  title: string;
-  description: string;
-  category: string;
+  title: LocalizedText;
+  description: LocalizedText;
+  category: LocalizedText;
   students: number;
-  duration: string;
+  duration: LocalizedText;
   image: string;
-  content?: string;
+  content?: LocalizedText;
 }
 
 export interface Achievement {
   id: string;
-  title: string;
+  title: LocalizedText;
   date: string;
-  description: string;
-  content?: string;
+  description: LocalizedText;
+  content?: LocalizedText;
 }
 
 export interface GlobalStats {
-  stat1Label: string;
+  stat1Label: LocalizedText;
   stat1Value: string;
-  stat2Label: string;
+  stat2Label: LocalizedText;
   stat2Value: string;
-  stat3Label: string;
+  stat3Label: LocalizedText;
   stat3Value: string;
-  stat4Label: string;
+  stat4Label: LocalizedText;
   stat4Value: string;
 }
 
 export interface NewsItem {
   id: string;
-  title: string;
-  description: string;
-  content: string;
+  title: LocalizedText;
+  description: LocalizedText;
+  content: LocalizedText;
   date: string;
   image: string;
   videoUrl?: string;
