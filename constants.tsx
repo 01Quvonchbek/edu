@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Course, Achievement, Stat } from './types';
+import { Course, Achievement, Stat, NewsItem } from './types';
 
 export const INITIAL_COURSES: Course[] = [
   {
@@ -10,8 +10,8 @@ export const INITIAL_COURSES: Course[] = [
     category: 'Aniq fanlar',
     students: 120,
     duration: '3 oy',
-    image: 'https://picsum.photos/seed/math/800/600',
-    content: "Ushbu kursda biz matematikaning eng qiziqarli va muhim jabhalarini o'rganamiz. \n\nKurs tarkibi:\n1. Mantiqiy mulohazalar va to'plamlar nazariyasi.\n2. Algoritmlar tuzish va ularning murakkabligini hisoblash.\n3. Graf nazariyasi va amaliy tatbiqlar.\n\nHar bir darsda nafaqat nazariya, balki haqiqiy hayotiy misollar ustida ishlaymiz. Kurs so'ngida talabalar murakkab muammolarni tizimli tahlil qilishni o'rganadilar."
+    image: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=800',
+    content: "Ushbu kursda biz matematikaning eng qiziqarli va muhim jabhalarini o'rganamiz. \n\nKurs tarkibi:\n1. Mantiqiy mulohazalar va to'plamlar nazariyasi.\n2. Algoritmlar tuzish va ularning murakkabligini hisoblash.\n3. Graf nazariyasi va amaliy tatbiqlar."
   },
   {
     id: '2',
@@ -20,18 +20,20 @@ export const INITIAL_COURSES: Course[] = [
     category: 'Tillar',
     students: 85,
     duration: '4 oy',
-    image: 'https://picsum.photos/seed/english/800/600',
-    content: "IELTS Masterclass - bu sizning xalqaro ta'limga bo'lgan yo'lingiz. \n\nNimalarni o'rganasiz:\n- Academic Writing Task 1 & 2: Eng yuqori ball keltiradigan strukturalar.\n- Reading: Vaqtni tejash va to'g'ri javoblarni tez topish strategiyalari.\n- Listening: Turli urg'ularni tushunish va diqqatni jamlash.\n- Speaking: Ravonlik va so'z boyligini oshirish mashqlari.\n\nKurs davomida har haftada Mock Exam (sinov imtihonlari) o'tkaziladi va xatolar ustida individual ishlanadi."
-  },
+    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800',
+    content: "IELTS Masterclass - bu sizning xalqaro ta'limga bo'lgan yo'lingiz."
+  }
+];
+
+export const INITIAL_NEWS: NewsItem[] = [
   {
-    id: '3',
-    title: 'Dasturlash asoslari (Python)',
-    description: 'Sun\'iy intellekt va ma\'lumotlar tahlili uchun eng mashhur tilni o\'rganing.',
-    category: 'IT',
-    students: 250,
-    duration: '6 oy',
-    image: 'https://picsum.photos/seed/code/800/600',
-    content: "Python - zamonaviy texnologiyalar asosi. \n\nKurs dasturi:\n1. Python sintaksisi va ma'lumot turlari.\n2. Funktsional va Obyektga Yo'naltirilgan Dasturlash (OOP).\n3. Ma'lumotlar ombori (SQL) bilan ishlash.\n4. Web-development (Django/Flask asoslari).\n\nKurs yakunida har bir talaba o'zining shaxsiy portfoliosi uchun to'liq ishlaydigan loyihasini (Telegram-bot yoki veb-sayt) tayyorlaydi."
+    id: 'n1',
+    title: 'IT Yakkabog\' markazining yangi binosi ochildi',
+    description: 'Zamonaviy sharoitlar va eng so\'nggi texnologiyalar bilan jihozlangan o\'quv markazimiz ish boshladi.',
+    content: 'Bizning yangi markazimizda endi 500 dan ortiq o\'quvchi bir vaqtning o\'zida ta\'lim olishi mumkin. Barcha xonalar yuqori tezlikdagi internet va zamonaviy kompyuterlar bilan ta\'minlangan.',
+    date: '20.05.2024',
+    image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=800',
+    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
   }
 ];
 
@@ -41,14 +43,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     title: 'Yilning eng yaxshi o\'qituvchisi',
     date: '2023',
     description: 'Xalq ta\'limi vazirligi tomonidan taqdirlandim.',
-    content: "Ushbu mukofot 2023-yil yakunlariga ko'ra, ta'lim tizimida innovatsiyalarni joriy etish va yoshlarning IT sohasiga bo'lgan qiziqishini oshirishdagi mehnatlarim uchun topshirildi. \n\nMarosim Toshkent shahridagi Simpoziumlar saroyida bo'lib o'tdi va soha mutaxassislari tomonidan yuqori baholandi."
-  },
-  {
-    id: 'a2',
-    title: 'Google Certified Educator',
-    date: '2022',
-    description: 'Xalqaro sertifikat sohibi.',
-    content: "Google Workspace for Education vositalaridan foydalanish bo'yicha Level 2 darajasidagi xalqaro sertifikat. Bu sertifikat darslarni raqamli texnologiyalar orqali samaraliroq tashkil etish imkoniyatini tasdiqlaydi."
+    content: "Ushbu mukofot 2023-yil yakunlariga ko'ra topshirildi."
   }
 ];
 

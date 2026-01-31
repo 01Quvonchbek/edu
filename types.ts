@@ -18,6 +18,16 @@ export interface Achievement {
   content?: string;
 }
 
+export interface NewsItem {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  date: string;
+  image: string;
+  videoUrl?: string;
+}
+
 export interface CourseEnrollment {
   id: string;
   courseId: string;
@@ -53,6 +63,7 @@ export interface Stat {
 export enum AppSection {
   HOME = 'home',
   COURSES = 'courses',
+  NEWS = 'news',
   ABOUT = 'about',
   CONTACT = 'contact',
   ADMIN = 'admin',
@@ -63,6 +74,7 @@ export enum AdminSubSection {
   DASHBOARD = 'dashboard',
   COURSE_MGMT = 'course_mgmt',
   ACHIEVEMENT_MGMT = 'achievement_mgmt',
+  NEWS_MGMT = 'news_mgmt',
   PROFILE_MGMT = 'profile_mgmt',
   CONTACT_MGMT = 'contact_mgmt',
   MESSAGES = 'messages',

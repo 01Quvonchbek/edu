@@ -21,10 +21,14 @@ import {
   Star,
   ExternalLink,
   Code2,
-  AlertCircle
+  AlertCircle,
+  Newspaper,
+  Play,
+  // Added missing Calendar icon
+  Calendar
 } from 'lucide-react';
-import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment } from './types';
-import { INITIAL_COURSES, ACHIEVEMENTS as INITIAL_ACHIEVEMENTS } from './constants';
+import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem } from './types';
+import { INITIAL_COURSES, INITIAL_NEWS, ACHIEVEMENTS as INITIAL_ACHIEVEMENTS } from './constants';
 import AdminPanel from './components/AdminPanel';
 import LoginForm from './components/LoginForm';
 
@@ -41,16 +45,21 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : INITIAL_ACHIEVEMENTS;
   });
 
+  const [news, setNews] = useState<NewsItem[]>(() => {
+    const saved = localStorage.getItem('edu_news');
+    return saved ? JSON.parse(saved) : INITIAL_NEWS;
+  });
+
   const [contactInfo, setContactInfo] = useState<ContactInfo>(() => {
     const saved = localStorage.getItem('edu_contact');
     return saved ? JSON.parse(saved) : {
-      address: 'Toshkent sh., Chilonzor tumani, 5-mavze',
-      email: 'info@eduport.uz',
+      address: 'Qashqadaryo vil., Yakkabog\' tumani',
+      email: 'it-yakkabog@mail.uz',
       phone: '+998 90 123 45 67',
-      instagram: 'https://instagram.com/eduport',
-      telegram: 'https://t.me/eduport_admin',
-      youtube: 'https://youtube.com/@eduport',
-      facebook: 'https://facebook.com/eduport'
+      instagram: 'https://instagram.com/ityakkabog',
+      telegram: 'https://t.me/ityakkabog',
+      youtube: 'https://youtube.com/@ityakkabog',
+      facebook: 'https://facebook.com/ityakkabog'
     };
   });
 
@@ -67,25 +76,17 @@ const App: React.FC = () => {
   const [logoClicks, setLogoClicks] = useState(0);
 
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success'>('idle');
-  const [selectedItem, setSelectedItem] = useState<{ type: 'course' | 'achievement', data: any } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{ type: 'course' | 'achievement' | 'news', data: any } | null>(null);
   const [showEnrollForm, setShowEnrollForm] = useState(false);
   const [enrollStatus, setEnrollStatus] = useState<'idle' | 'sending' | 'success'>('idle');
 
   useEffect(() => {
     localStorage.setItem('edu_courses', JSON.stringify(courses));
-  }, [courses]);
-
-  useEffect(() => {
+    localStorage.setItem('edu_news', JSON.stringify(news));
     localStorage.setItem('edu_achievements', JSON.stringify(achievements));
-  }, [achievements]);
-
-  useEffect(() => {
     localStorage.setItem('edu_contact', JSON.stringify(contactInfo));
-  }, [contactInfo]);
-
-  useEffect(() => {
     localStorage.setItem('edu_teacher_image', teacherImage);
-  }, [teacherImage]);
+  }, [courses, news, achievements, contactInfo, teacherImage]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -155,6 +156,12 @@ const App: React.FC = () => {
     </button>
   );
 
+  const getYouTubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
   if (activeSection === AppSection.ADMIN) {
     if (!isLoggedIn) {
       return (
@@ -168,6 +175,7 @@ const App: React.FC = () => {
       <AdminPanel 
         courses={courses} 
         achievements={achievements}
+        news={news}
         teacherImage={teacherImage}
         contactInfo={contactInfo}
         messages={messages}
@@ -180,6 +188,9 @@ const App: React.FC = () => {
         onAddAchievement={(a) => setAchievements([...achievements, a])}
         onUpdateAchievement={(updated) => setAchievements(achievements.map(a => a.id === updated.id ? updated : a))}
         onDeleteAchievement={(id) => setAchievements(achievements.filter(a => a.id !== id))}
+        onAddNews={(item) => setNews([...news, item])}
+        onUpdateNews={(updated) => setNews(news.map(n => n.id === updated.id ? updated : n))}
+        onDeleteNews={(id) => setNews(news.filter(n => n.id !== id))}
         onDeleteMessage={(id) => setMessages(messages.filter(m => m.id !== id))}
         onDeleteEnrollment={(id) => setEnrollments(enrollments.filter(e => e.id !== id))}
         onExit={() => setActiveSection(AppSection.HOME)}
@@ -197,11 +208,12 @@ const App: React.FC = () => {
             setLogoClicks(p => p + 1);
             if (logoClicks >= 4) { setActiveSection(AppSection.ADMIN); setLogoClicks(0); }
           }}>
-            <GraduationCap className="w-10 h-10" />
-            <span className="text-2xl font-black tracking-tighter">EduPort</span>
+            <Code2 className="w-10 h-10" />
+            <span className="text-2xl font-black tracking-tighter uppercase">IT Yakkabog'</span>
           </div>
           <div className="hidden md:flex items-center space-x-2">
             <NavLink id={AppSection.HOME} label="Asosiy" />
+            <NavLink id={AppSection.NEWS} label="Yangiliklar" />
             <NavLink id={AppSection.COURSES} label="Kurslar" />
             <NavLink id={AppSection.ABOUT} label="Yutuqlar" />
             <NavLink id={AppSection.CONTACT} label="Aloqa" />
@@ -216,6 +228,7 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-40 bg-white pt-24 px-6 md:hidden animate-fadeIn">
           <div className="flex flex-col space-y-4">
              <NavLink id={AppSection.HOME} label="Asosiy" />
+             <NavLink id={AppSection.NEWS} label="Yangiliklar" />
              <NavLink id={AppSection.COURSES} label="Kurslar" />
              <NavLink id={AppSection.ABOUT} label="Yutuqlar" />
              <NavLink id={AppSection.CONTACT} label="Aloqa" />
@@ -227,18 +240,53 @@ const App: React.FC = () => {
         <div className="absolute top-0 right-0 -z-10 w-1/3 h-full bg-indigo-50 rounded-bl-[100px] hidden lg:block" />
         <div className="max-w-7xl mx-auto px-4 md:px-8 grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-slideUp">
-            <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold tracking-wide uppercase">Ta'lim Mutaxassisi</span>
-            <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1]">Bilimga asoslangan <span className="text-indigo-600">kelajak</span></h1>
-            <p className="text-xl text-slate-600 max-w-lg leading-relaxed">Metodika, texnologiya va AI integratsiyasi orqali ta'lim sifatini oshirish.</p>
-            <button onClick={() => document.getElementById('courses')?.scrollIntoView({ behavior: 'smooth' })} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-2 hover:bg-indigo-700 transition shadow-xl shadow-indigo-200">
-              <span>Kurslarni ko'rish</span>
+            <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold tracking-wide uppercase">IT Markaz & Portfolio</span>
+            <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1]">Yakkabog'da <span className="text-indigo-600">IT ta'lim</span> tizimi</h1>
+            <p className="text-xl text-slate-600 max-w-lg leading-relaxed">Kelajak kasblarini professional mutaxassislar bilan birga o'rganing.</p>
+            <button onClick={() => document.getElementById('news')?.scrollIntoView({ behavior: 'smooth' })} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-2 hover:bg-indigo-700 transition shadow-xl shadow-indigo-200">
+              <span>Yangiliklar bilan tanishish</span>
               <ArrowRight size={20} />
             </button>
           </div>
           <div className="relative animate-fadeIn hidden md:block">
             <div className="relative rounded-[40px] overflow-hidden shadow-2xl bg-slate-200 aspect-[4/5]">
-              <img src={teacherImage} alt="Teacher" className="w-full h-full object-cover" />
+              <img src={teacherImage} alt="IT Yakkabog" className="w-full h-full object-cover" />
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="news" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="flex justify-between items-end mb-16">
+            <div className="space-y-4">
+              <span className="text-indigo-600 font-black uppercase text-sm tracking-widest">Markaz hayoti</span>
+              <h2 className="text-4xl font-black text-slate-900">Yangiliklar</h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {news.map((item) => (
+              <div key={item.id} onClick={() => setSelectedItem({ type: 'news', data: item })} className="group cursor-pointer bg-slate-50 rounded-3xl overflow-hidden border border-slate-100 hover:border-indigo-600 transition-all hover:shadow-xl">
+                <div className="relative h-64 overflow-hidden">
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                  {item.videoUrl && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-xl">
+                        <Play fill="currentColor" size={24} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="p-8 space-y-3">
+                  <div className="flex items-center space-x-2 text-indigo-600 text-xs font-black uppercase">
+                    <Calendar size={14} />
+                    <span>{item.date}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-2">{item.title}</h3>
+                  <p className="text-slate-600 line-clamp-2 text-sm leading-relaxed">{item.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -246,6 +294,7 @@ const App: React.FC = () => {
       <section id="courses" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <span className="text-indigo-600 font-black uppercase text-sm tracking-widest">O'quv yo'nalishlari</span>
             <h2 className="text-4xl font-black text-slate-900">Mualliflik kurslari</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -255,8 +304,12 @@ const App: React.FC = () => {
                   <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                 </div>
                 <div className="p-8 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-tighter">{course.category}</span>
+                    <span className="flex items-center text-slate-400 text-xs gap-1 font-bold"><Users size={14}/> {course.students}</span>
+                  </div>
                   <h3 className="text-2xl font-bold text-slate-900">{course.title}</h3>
-                  <p className="text-slate-600 line-clamp-2">{course.description}</p>
+                  <p className="text-slate-600 line-clamp-2 text-sm">{course.description}</p>
                 </div>
               </div>
             ))}
@@ -317,8 +370,8 @@ const App: React.FC = () => {
       <footer className="bg-slate-900 text-white pt-24 pb-12 text-center">
         <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-8 flex flex-col items-center">
           <div className="flex items-center space-x-2 text-indigo-400">
-            <GraduationCap className="w-10 h-10" />
-            <span className="text-2xl font-black tracking-tighter text-white">EduPort</span>
+            <Code2 className="w-10 h-10" />
+            <span className="text-2xl font-black tracking-tighter text-white uppercase">IT Yakkabog'</span>
           </div>
           
           <div className="flex flex-wrap justify-center gap-6">
@@ -334,31 +387,49 @@ const App: React.FC = () => {
              <a href={contactInfo.facebook} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition-all duration-300 shadow-lg" title="Facebook">
                 <Facebook size={28} />
              </a>
-             <a href={`mailto:${contactInfo.email}`} className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-indigo-600 hover:-translate-y-1 transition-all duration-300 shadow-lg" title="Email">
-                <Mail size={28} />
-             </a>
           </div>
-          <p className="text-slate-500 text-sm mt-8">&copy; 2024 EduPortfolio. Barcha huquqlar himoyalangan.</p>
+          <p className="text-slate-500 text-sm mt-8">&copy; 2024 IT Yakkabog'. Barcha huquqlar himoyalangan.</p>
         </div>
       </footer>
 
       {selectedItem && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-xl p-4 md:p-8 animate-fadeIn">
           <div className="bg-white w-full max-w-5xl rounded-[40px] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-slideUp max-h-[90vh] relative">
-            {selectedItem.type === 'course' && (
-              <div className="w-full md:w-2/5 bg-slate-100 relative h-64 md:h-auto">
+            {(selectedItem.type === 'course' || selectedItem.type === 'news') && (
+              <div className="w-full md:w-2/5 bg-slate-100 relative h-64 md:h-auto overflow-hidden">
                 <img src={selectedItem.data.image} alt={selectedItem.data.title} className="w-full h-full object-cover" />
               </div>
             )}
             <div className={`w-full flex-1 p-8 md:p-12 overflow-y-auto ${selectedItem.type === 'achievement' ? 'md:w-full' : ''}`}>
               <div className="flex justify-between items-start mb-6">
-                <div>
+                <div className="space-y-2">
+                  {selectedItem.data.date && <span className="text-indigo-600 text-xs font-black uppercase tracking-widest">{selectedItem.data.date}</span>}
                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">{selectedItem.data.title}</h2>
                 </div>
-                <button onClick={() => { setSelectedItem(null); setShowEnrollForm(false); }} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition text-slate-600"><X size={24} /></button>
+                <button onClick={() => { setSelectedItem(null); setShowEnrollForm(false); }} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition text-slate-600 flex-shrink-0 ml-4"><X size={24} /></button>
               </div>
+              
               <p className="text-xl text-slate-600 mb-8 italic border-l-4 border-indigo-200 pl-6">{selectedItem.data.description}</p>
-              <div className="text-slate-800 leading-relaxed space-y-4 whitespace-pre-wrap mb-10">{selectedItem.data.content || "Ma'lumot mavjud emas."}</div>
+              
+              {selectedItem.type === 'news' && selectedItem.data.videoUrl && (
+                <div className="mb-10 rounded-3xl overflow-hidden shadow-xl aspect-video bg-black">
+                  {getYouTubeId(selectedItem.data.videoUrl) ? (
+                    <iframe 
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${getYouTubeId(selectedItem.data.videoUrl)}`}
+                      title="YouTube video player"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/40 italic">Havola noto'g'ri</div>
+                  )}
+                </div>
+              )}
+
+              <div className="text-slate-800 leading-relaxed space-y-4 whitespace-pre-wrap mb-10 text-lg">{selectedItem.data.content || "Ma'lumot mavjud emas."}</div>
+              
               {selectedItem.type === 'course' && !showEnrollForm && (
                 <button onClick={() => setShowEnrollForm(true)} className="w-full bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 shadow-lg"><span>Kursga yozilish</span><ArrowRight size={20} /></button>
               )}
