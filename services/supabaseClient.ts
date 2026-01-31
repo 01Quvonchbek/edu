@@ -1,8 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Siz taqdim etgan Supabase loyihasi ma'lumotlari:
-const supabaseUrl = 'https://dejzcgzkyrxglcuivozk.supabase.co';
-const supabaseAnonKey = 'sb_publishable_gc9vDYb9E_yJW_xYrBYyww_AnvGixcT';
+// Siz taqdim etgan yangi Supabase loyihasi ma'lumotlari:
+const supabaseUrl = 'https://qatbvvvzskerofkazglw.supabase.co';
+const supabaseAnonKey = 'sb_publishable_FW3yXwd-ueKrJu9WenkgzA_xYz4CPwu';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
