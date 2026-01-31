@@ -121,6 +121,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar Section */}
       <aside className="w-72 bg-white border-r fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl">
         <div className="p-8 flex items-center gap-3 text-indigo-600">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
@@ -145,13 +146,14 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         </div>
       </aside>
 
+      {/* Main Content Area */}
       <main className="flex-1 ml-72 p-12 overflow-y-auto">
         <div className="max-w-6xl mx-auto space-y-12 pb-24">
           
-          {/* Dashboard */}
+          {/* 1. Dashboard Tab */}
           {activeTab === AdminSubSection.DASHBOARD && (
              <div className="space-y-10 animate-fadeIn">
-                <h1 className="text-4xl font-black text-slate-900 tracking-tight">Xush kelibsiz!</h1>
+                <h1 className="text-4xl font-black text-slate-900 tracking-tight">Akademiya Holati</h1>
                 <div className="grid grid-cols-4 gap-6">
                   {[
                     { label: 'Kurslar', val: props.courses.length, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -169,32 +171,32 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
              </div>
           )}
 
-          {/* News Management Tiklandi */}
-          {activeTab === AdminSubSection.NEWS_MGMT && (
+          {/* 2. Course Management Tab */}
+          {activeTab === AdminSubSection.COURSE_MGMT && (
             <div className="space-y-8 animate-fadeIn">
               <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-black text-slate-900">Yangiliklarni Boshqarish</h2>
+                <h2 className="text-3xl font-black text-slate-900">O'quv Kurslari</h2>
                 <button onClick={() => { 
-                  setEditingNews(null); 
-                  setNewsForm({ title: emptyLocalized(), description: emptyLocalized(), content: emptyLocalized(), date: new Date().toLocaleDateString(), image: '' }); 
-                  setShowNewsModal(true); 
+                  setEditingCourse(null); 
+                  setCourseForm({ title: emptyLocalized(), description: emptyLocalized(), category: emptyLocalized(), duration: emptyLocalized(), students: 0, content: emptyLocalized(), image: '' }); 
+                  setShowCourseModal(true); 
                 }} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">
-                  <Plus size={20}/> Yangi Xabar
+                  <Plus size={20}/> Yangi Kurs
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {props.news.map(n => (
-                  <div key={n.id} className="bg-white p-6 rounded-[40px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
+                {props.courses.map(c => (
+                  <div key={c.id} className="bg-white p-6 rounded-[40px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
                     <div className="flex items-center gap-6">
-                      <img src={n.image} className="w-20 h-20 rounded-3xl object-cover shadow-inner bg-slate-50 border" alt={n.title.uz} />
+                      <img src={c.image} className="w-20 h-20 rounded-3xl object-cover shadow-inner bg-slate-50 border" alt={c.title.uz} />
                       <div>
-                        <h4 className="font-black text-lg text-slate-900 line-clamp-1">{n.title.uz}</h4>
-                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{n.date}</p>
+                        <h4 className="font-black text-lg text-slate-900 line-clamp-1">{c.title.uz}</h4>
+                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{c.category.uz}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => { setEditingNews(n); setNewsForm(n); setShowNewsModal(true); }} className="p-4 bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><Edit3 size={18}/></button>
-                      <button onClick={() => { if(confirm('O\'chirmoqchimisiz?')) props.onDeleteNews(n.id); }} className="p-4 bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18}/></button>
+                      <button onClick={() => { setEditingCourse(c); setCourseForm(c); setShowCourseModal(true); }} className="p-4 bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><Edit3 size={18}/></button>
+                      <button onClick={() => { if(confirm('O\'chirmoqchimisiz?')) props.onDeleteCourse(c.id); }} className="p-4 bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18}/></button>
                     </div>
                   </div>
                 ))}
@@ -202,79 +204,89 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
             </div>
           )}
 
-          {/* Contact Tiklandi */}
-          {activeTab === AdminSubSection.CONTACT_MGMT && (
+          {/* 3. Enrollments (Arizalar) Tab */}
+          {activeTab === AdminSubSection.ENROLLMENTS && (
             <div className="space-y-8 animate-fadeIn">
-               <h2 className="text-3xl font-black text-slate-900">Aloqa & Ijtimoiy Tarmoqlar</h2>
-               <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl space-y-8 max-w-3xl">
-                 <div className="grid md:grid-cols-2 gap-8">
-                   <div className="space-y-4">
-                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Asosiy</p>
-                     <input value={contactForm.address} onChange={e => setContactForm({...contactForm, address: e.target.value})} placeholder="Manzil" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
-                     <input value={contactForm.email} onChange={e => setContactForm({...contactForm, email: e.target.value})} placeholder="Email" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
-                     <input value={contactForm.phone} onChange={e => setContactForm({...contactForm, phone: e.target.value})} placeholder="Telefon" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
-                   </div>
-                   <div className="space-y-4">
-                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Social Linklar</p>
-                     <input value={contactForm.instagram} onChange={e => setContactForm({...contactForm, instagram: e.target.value})} placeholder="Instagram URL" className="w-full p-4 bg-pink-50 border border-pink-100 rounded-2xl outline-none" />
-                     <input value={contactForm.telegram} onChange={e => setContactForm({...contactForm, telegram: e.target.value})} placeholder="Telegram URL" className="w-full p-4 bg-blue-50 border border-blue-100 rounded-2xl outline-none" />
-                     <input value={contactForm.youtube} onChange={e => setContactForm({...contactForm, youtube: e.target.value})} placeholder="Youtube URL" className="w-full p-4 bg-red-50 border border-red-100 rounded-2xl outline-none" />
-                     <input value={contactForm.facebook} onChange={e => setContactForm({...contactForm, facebook: e.target.value})} placeholder="Facebook URL" className="w-full p-4 bg-indigo-50 border border-indigo-100 rounded-2xl outline-none" />
-                   </div>
+               <h2 className="text-3xl font-black text-slate-900">Kursga Kelib Tushgan Arizalar</h2>
+               {props.enrollments.length === 0 ? (
+                 <div className="text-center py-20 bg-white rounded-[40px] border border-slate-100"><p className="text-slate-400 font-bold">Arizalar mavjud emas.</p></div>
+               ) : (
+                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100">
+                          <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">O'quvchi</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Kurs</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Telefon</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Amal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {props.enrollments.map(e => (
+                          <tr key={e.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="px-8 py-6 font-black text-slate-900">{e.studentName}</td>
+                            <td className="px-8 py-6 font-bold text-indigo-600">{e.courseTitle}</td>
+                            <td className="px-8 py-6 text-slate-500 font-medium">{e.studentPhone}</td>
+                            <td className="px-8 py-6 text-right">
+                              <button onClick={() => { if(confirm('Orizani o\'chirmoqchimisiz?')) props.onDeleteEnrollment(e.id); }} className="text-rose-400 hover:text-rose-600 p-2"><Trash2 size={18}/></button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                  </div>
-                 <button onClick={() => props.onUpdateContactInfo(contactForm)} className="w-full bg-slate-900 text-white py-6 rounded-[32px] font-black text-lg shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3">
-                   <Save size={20}/> Ma'lumotlarni Saqlash
-                 </button>
-               </div>
+               )}
             </div>
           )}
-          
-          {/* Achievement Management */}
-          {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
-            <div className="space-y-12 animate-fadeIn">
-              <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-black text-slate-900">Yutuqlarni Boshqarish</h2>
-                <button onClick={() => { setEditingAch(null); setAchForm({ title: emptyLocalized(), description: emptyLocalized(), date: '2024' }); setShowAchModal(true); }} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">
-                  <Plus size={20}/> Yangi Yutuq
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {props.achievements.map(ach => (
-                  <div key={ach.id} className="bg-white p-6 rounded-[40px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black shrink-0"><Award size={32}/></div>
-                      <div>
-                        <h4 className="font-black text-xl text-slate-900">{ach.title.uz}</h4>
-                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{ach.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => { setEditingAch(ach); setAchForm(ach); setShowAchModal(true); }} className="p-4 bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><Edit3 size={18}/></button>
-                      <button onClick={() => { if(confirm('O\'chirmoqchimisiz?')) props.onDeleteAchievement(ach.id); }} className="p-4 bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18}/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl space-y-10">
-                <h3 className="text-2xl font-black text-slate-900">Asosiy ko'rsatkichlar (Stats)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  {[1, 2, 3, 4].map(num => {
-                    const labelKey = `stat${num}Label` as keyof GlobalStats;
-                    const valueKey = `stat${num}Value` as keyof GlobalStats;
-                    return (
-                      <div key={num} className="space-y-6">
-                        <LocalizedInput label={`Karta ${num} Sarlavhasi`} value={statsForm[labelKey] as LocalizedText} onChange={val => setStatsForm(prev => ({...prev, [labelKey]: val} as GlobalStats))} />
-                        <div className="space-y-2 ml-2">
-                          <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Qiymat</p>
-                          <input type="text" value={statsForm[valueKey] as string} onChange={e => setStatsForm(prev => ({...prev, [valueKey]: e.target.value} as GlobalStats))} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
+
+          {/* 4. Messages (Xabarlar) Tab */}
+          {activeTab === AdminSubSection.MESSAGES && (
+            <div className="space-y-8 animate-fadeIn">
+               <h2 className="text-3xl font-black text-slate-900">Xabarlar & Murojaatlar</h2>
+               {props.messages.length === 0 ? (
+                 <div className="text-center py-20 bg-white rounded-[40px] border border-slate-100"><p className="text-slate-400 font-bold">Xabarlar mavjud emas.</p></div>
+               ) : (
+                 <div className="space-y-6">
+                    {props.messages.map(m => (
+                      <div key={m.id} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex justify-between items-start group">
+                        <div className="space-y-4 max-w-3xl">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-sm">{m.name.charAt(0)}</div>
+                            <div>
+                              <p className="font-black text-slate-900 text-lg">{m.name}</p>
+                              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{m.email} • {new Date(m.date).toLocaleString()}</p>
+                            </div>
+                          </div>
+                          <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 text-slate-700 font-medium leading-relaxed">
+                            {m.message}
+                          </div>
                         </div>
+                        <button onClick={() => { if(confirm('Xabarni o\'chirmoqchimisiz?')) props.onDeleteMessage(m.id); }} className="p-4 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={20}/></button>
                       </div>
-                    );
-                  })}
+                    ))}
+                 </div>
+               )}
+            </div>
+          )}
+
+          {/* 5. Profile Picture (Profil Rasmi) Tab */}
+          {activeTab === AdminSubSection.PROFILE_MGMT && (
+            <div className="space-y-8 animate-fadeIn">
+              <h2 className="text-3xl font-black text-slate-900">Asosiy Profil Rasmi (Mentor)</h2>
+              <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl flex flex-col items-center gap-10 max-w-xl mx-auto">
+                <div className="w-64 h-80 rounded-[48px] overflow-hidden border-8 border-slate-50 shadow-2xl relative group">
+                  <img src={props.teacherImage} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Profile" />
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Camera className="text-white" size={48} />
+                  </div>
                 </div>
-                <button onClick={() => props.onUpdateGlobalStats(statsForm)} className="w-full bg-slate-900 text-white py-6 rounded-[32px] font-black text-xl shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3">
-                  <Save size={24}/> Statistikani Saqlash
-                </button>
+                <div className="w-full space-y-4 text-center">
+                  <p className="text-slate-500 font-medium text-sm">Bu rasm asosiy sahifadagi "Hero Section"da aks etadi.</p>
+                  <button onClick={() => profileFileInputRef.current?.click()} className="w-full bg-indigo-600 text-white py-5 rounded-[24px] font-black shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-3">
+                    <Camera size={20}/> Rasmni Tanlash
+                  </button>
+                  <input type="file" ref={profileFileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'profile')} />
+                </div>
               </div>
             </div>
           )}
@@ -282,95 +294,44 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         </div>
       </main>
 
-      {/* Shared Modals for Course & News & Achievements Tiklandi */}
-      {showNewsModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-xl">
-          <div className="bg-white rounded-[60px] p-12 w-full max-w-4xl shadow-3xl overflow-y-auto max-h-[90vh] space-y-10 animate-slideUp">
-            <div className="flex justify-between items-center">
-              <h2 className="text-4xl font-black text-slate-900">{editingNews ? 'Xabarni Tahrirlash' : 'Yangi Xabar'}</h2>
-              <button onClick={() => setShowNewsModal(false)} className="p-4 bg-slate-50 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"><X size={24}/></button>
-            </div>
-            <div className="space-y-8">
-              <div className="p-8 bg-slate-50 rounded-[48px] border border-slate-100 flex flex-col items-center gap-6">
-                <div className="w-full max-w-md aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-slate-200">
-                  {newsForm.image ? <img src={newsForm.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">Rasm Yuklang</div>}
-                </div>
-                <button onClick={() => newsFileInputRef.current?.click()} className="px-8 py-4 bg-white border border-slate-200 text-indigo-600 rounded-2xl font-black text-sm uppercase tracking-widest shadow-sm hover:shadow-md transition-all">Rasm Tanlash</button>
-                <input type="file" ref={newsFileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'news')}/>
-              </div>
-              <LocalizedInput label="Sarlavha" value={newsForm.title as LocalizedText} onChange={val => setNewsForm({...newsForm, title: val})} />
-              <div className="space-y-2 ml-2">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sana</p>
-                <input type="text" value={newsForm.date || ''} onChange={e => setNewsForm({...newsForm, date: e.target.value})} className="w-full p-4 border border-slate-200 rounded-2xl outline-none" placeholder="Masalan: 20.05.2024" />
-              </div>
-              <LocalizedInput label="Qisqa Tavsif" value={newsForm.description as LocalizedText} onChange={val => setNewsForm({...newsForm, description: val})} isTextArea />
-              <LocalizedInput label="To'liq Mazmun" value={newsForm.content as LocalizedText} onChange={val => setNewsForm({...newsForm, content: val})} isTextArea />
-            </div>
-            <button onClick={() => { 
-              if(editingNews) props.onUpdateNews({...editingNews, ...newsForm} as NewsItem); 
-              else props.onAddNews({id: Math.random().toString(36).substr(2,9), ...newsForm} as NewsItem); 
-              setShowNewsModal(false); 
-            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">Saqlash</button>
-          </div>
-        </div>
-      )}
-
-      {/* Course Modal Tiklandi */}
+      {/* Course Modal */}
       {showCourseModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-xl">
           <div className="bg-white rounded-[60px] p-12 w-full max-w-5xl shadow-3xl overflow-y-auto max-h-[90vh] space-y-10 animate-slideUp">
-            <div className="flex justify-between items-center">
-              <h2 className="text-4xl font-black text-slate-900">{editingCourse ? 'Kursni Tahrirlash' : 'Yangi Kurs'}</h2>
+            <div className="flex justify-between items-center border-b border-slate-100 pb-8">
+              <h2 className="text-4xl font-black text-slate-900">{editingCourse ? 'Kurs Ma\'lumotlarini Yangilash' : 'Yangi Kurs Qo\'shish'}</h2>
               <button onClick={() => setShowCourseModal(false)} className="p-4 bg-slate-50 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"><X size={24}/></button>
             </div>
+            
             <div className="grid md:grid-cols-2 gap-10">
               <div className="space-y-8">
                 <div className="p-8 bg-slate-50 rounded-[48px] border border-slate-100 flex flex-col items-center gap-6">
                   <div className="w-full aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-slate-200">
-                    {courseForm.image ? <img src={courseForm.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">Rasm Yuklang</div>}
+                    {courseForm.image ? <img src={courseForm.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">Rasm yuklanmagan</div>}
                   </div>
-                  <button onClick={() => fileInputRef.current?.click()} className="px-8 py-4 bg-white border border-slate-200 text-indigo-600 rounded-2xl font-black text-sm uppercase tracking-widest shadow-sm hover:shadow-md transition-all">Rasm Tanlash</button>
+                  <button onClick={() => fileInputRef.current?.click()} className="px-8 py-4 bg-white border border-slate-200 text-indigo-600 rounded-2xl font-black text-sm uppercase tracking-widest shadow-sm hover:shadow-md transition-all">Sarlavha Rasmini Yuklash</button>
                   <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'course')}/>
                 </div>
                 <LocalizedInput label="Kurs Nomi" value={courseForm.title as LocalizedText} onChange={val => setCourseForm({...courseForm, title: val})} />
-                <LocalizedInput label="Kategoriya" value={courseForm.category as LocalizedText} onChange={val => setCourseForm({...courseForm, category: val})} />
+                <LocalizedInput label="Kategoriya (Yo'nalish)" value={courseForm.category as LocalizedText} onChange={val => setCourseForm({...courseForm, category: val})} />
               </div>
+
               <div className="space-y-8">
                 <LocalizedInput label="Davomiyligi" value={courseForm.duration as LocalizedText} onChange={val => setCourseForm({...courseForm, duration: val})} />
-                <LocalizedInput label="Qisqa Tavsif" value={courseForm.description as LocalizedText} onChange={val => setCourseForm({...courseForm, description: val})} isTextArea />
-                <LocalizedInput label="To'liq Mazmun" value={courseForm.content as LocalizedText} onChange={val => setCourseForm({...courseForm, content: val})} isTextArea />
+                <div className="space-y-2 ml-2">
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">O'quvchilar Soni (Taxminiy)</p>
+                  <input type="number" value={courseForm.students || 0} onChange={e => setCourseForm({...courseForm, students: parseInt(e.target.value) || 0})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all" />
+                </div>
+                <LocalizedInput label="Qisqa Tavsif (Card uchun)" value={courseForm.description as LocalizedText} onChange={val => setCourseForm({...courseForm, description: val})} isTextArea />
+                <LocalizedInput label="Batafsil Mazmuni (Modal uchun)" value={courseForm.content as LocalizedText} onChange={val => setCourseForm({...courseForm, content: val})} isTextArea />
               </div>
             </div>
+
             <button onClick={() => { 
               if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); 
               else props.onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseForm} as Course); 
               setShowCourseModal(false); 
-            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">Saqlash</button>
-          </div>
-        </div>
-      )}
-
-      {/* Achievement Modal Tiklandi */}
-      {showAchModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-xl">
-          <div className="bg-white rounded-[60px] p-12 w-full max-w-3xl shadow-3xl overflow-y-auto max-h-[90vh] space-y-10 animate-slideUp">
-            <div className="flex justify-between items-center">
-              <h2 className="text-4xl font-black text-slate-900">{editingAch ? 'Yutuqni Tahrirlash' : 'Yangi Yutuq'}</h2>
-              <button onClick={() => setShowAchModal(false)} className="p-4 bg-slate-50 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"><X size={24}/></button>
-            </div>
-            <div className="space-y-8">
-              <LocalizedInput label="Yutuq Sarlavhasi" value={achForm.title as LocalizedText} onChange={val => setAchForm({...achForm, title: val})} />
-              <div className="space-y-2 ml-2">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sana</p>
-                <input type="text" value={achForm.date || ''} onChange={e => setAchForm({...achForm, date: e.target.value})} className="w-full p-4 border border-slate-200 rounded-2xl outline-none" placeholder="Masalan: 2024" />
-              </div>
-              <LocalizedInput label="Tavsif" value={achForm.description as LocalizedText} onChange={val => setAchForm({...achForm, description: val})} isTextArea />
-            </div>
-            <button onClick={() => { 
-              if(editingAch) props.onUpdateAchievement({...editingAch, ...achForm} as Achievement); 
-              else props.onAddAchievement({id: Math.random().toString(36).substr(2,9), ...achForm} as Achievement); 
-              setShowAchModal(false); 
-            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">Saqlash</button>
+            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">Kursni Saqlash</button>
           </div>
         </div>
       )}

@@ -53,28 +53,34 @@ const App: React.FC = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const { data: c } = await supabase.from('courses').select('*').order('id', { ascending: false });
+        // Parallel fetching to avoid blocking
+        const [
+          { data: c }, 
+          { data: n }, 
+          { data: a }, 
+          { data: s }, 
+          { data: ci }, 
+          { data: m }, 
+          { data: e }, 
+          { data: ti }
+        ] = await Promise.all([
+          supabase.from('courses').select('*').order('id', { ascending: false }),
+          supabase.from('news').select('*').order('date', { ascending: false }),
+          supabase.from('achievements').select('*'),
+          supabase.from('global_stats').select('*').maybeSingle(), // Use maybeSingle to avoid error if empty
+          supabase.from('contact_info').select('*').maybeSingle(),
+          supabase.from('messages').select('*').order('date', { ascending: false }),
+          supabase.from('enrollments').select('*').order('date', { ascending: false }),
+          supabase.from('teacher_profile').select('image_url').maybeSingle()
+        ]);
+
         if (c && c.length > 0) setCourses(c as Course[]); else setCourses(INITIAL_COURSES);
-
-        const { data: n } = await supabase.from('news').select('*').order('date', { ascending: false });
         if (n && n.length > 0) setNews(n as NewsItem[]); else setNews(INITIAL_NEWS);
-
-        const { data: a } = await supabase.from('achievements').select('*');
         if (a && a.length > 0) setAchievements(a as Achievement[]); else setAchievements(INITIAL_ACHIEVEMENTS);
-
-        const { data: s } = await supabase.from('global_stats').select('*').single();
         if (s) setGlobalStats(s as GlobalStats);
-
-        const { data: ci } = await supabase.from('contact_info').select('*').single();
         if (ci) setContactInfo(ci as ContactInfo);
-
-        const { data: m } = await supabase.from('messages').select('*').order('date', { ascending: false });
         if (m) setMessages(m as ContactMessage[]);
-
-        const { data: e } = await supabase.from('enrollments').select('*').order('date', { ascending: false });
         if (e) setEnrollments(e as CourseEnrollment[]);
-
-        const { data: ti } = await supabase.from('teacher_profile').select('image_url').single();
         if (ti?.image_url) setTeacherImage(ti.image_url);
 
       } catch (error) {
@@ -131,20 +137,62 @@ const App: React.FC = () => {
     return (
       <AdminPanel 
         courses={courses} achievements={achievements} news={news} teacherImage={teacherImage} contactInfo={contactInfo} messages={messages} enrollments={enrollments} globalStats={globalStats}
-        onUpdateTeacherImage={async url => { await supabase.from('teacher_profile').update({ image_url: url }).eq('id', 1); setTeacherImage(url); }}
-        onUpdateContactInfo={async info => { await supabase.from('contact_info').update(info).eq('id', 1); setContactInfo(info); }}
-        onUpdateGlobalStats={async stats => { await supabase.from('global_stats').update(stats).eq('id', 1); setGlobalStats(stats); }}
-        onAddCourse={async c => { const { data } = await supabase.from('courses').insert([c]).select(); if (data && data[0]) setCourses([data[0] as Course, ...courses]); }}
-        onUpdateCourse={async u => { await supabase.from('courses').update(u).eq('id', u.id); setCourses(courses.map(c => c.id === u.id ? u : c)); }}
-        onDeleteCourse={async id => { await supabase.from('courses').delete().eq('id', id); setCourses(courses.filter(c => c.id !== id)); }}
-        onAddNews={async n => { const { data } = await supabase.from('news').insert([n]).select(); if (data && data[0]) setNews([data[0] as NewsItem, ...news]); }}
-        onUpdateNews={async u => { await supabase.from('news').update(u).eq('id', u.id); setNews(news.map(n => n.id === u.id ? u : n)); }}
-        onDeleteNews={async id => { await supabase.from('news').delete().eq('id', id); setNews(news.filter(n => n.id !== id)); }}
-        onAddAchievement={async a => { const { data } = await supabase.from('achievements').insert([a]).select(); if (data && data[0]) setAchievements([data[0] as Achievement, ...achievements]); }}
-        onUpdateAchievement={async u => { await supabase.from('achievements').update(u).eq('id', u.id); setAchievements(achievements.map(a => a.id === u.id ? u : a)); }}
-        onDeleteAchievement={async id => { await supabase.from('achievements').delete().eq('id', id); setAchievements(achievements.filter(a => a.id !== id)); }}
-        onDeleteMessage={async id => { await supabase.from('messages').delete().eq('id', id); setMessages(messages.filter(m => m.id !== id)); }}
-        onDeleteEnrollment={async id => { await supabase.from('enrollments').delete().eq('id', id); setEnrollments(enrollments.filter(e => e.id !== id)); }}
+        onUpdateTeacherImage={async url => { 
+          await supabase.from('teacher_profile').upsert({ id: 1, image_url: url }); 
+          setTeacherImage(url); 
+        }}
+        onUpdateContactInfo={async info => { 
+          await supabase.from('contact_info').upsert({ id: 1, ...info }); 
+          setContactInfo(info); 
+        }}
+        onUpdateGlobalStats={async stats => { 
+          await supabase.from('global_stats').upsert({ id: 1, ...stats }); 
+          setGlobalStats(stats); 
+        }}
+        onAddCourse={async c => { 
+          const { data } = await supabase.from('courses').insert([c]).select(); 
+          if (data && data[0]) setCourses([data[0] as Course, ...courses]); 
+        }}
+        onUpdateCourse={async u => { 
+          await supabase.from('courses').update(u).eq('id', u.id); 
+          setCourses(courses.map(c => c.id === u.id ? u : c)); 
+        }}
+        onDeleteCourse={async id => { 
+          await supabase.from('courses').delete().eq('id', id); 
+          setCourses(courses.filter(c => c.id !== id)); 
+        }}
+        onAddNews={async n => { 
+          const { data } = await supabase.from('news').insert([n]).select(); 
+          if (data && data[0]) setNews([data[0] as NewsItem, ...news]); 
+        }}
+        onUpdateNews={async u => { 
+          await supabase.from('news').update(u).eq('id', u.id); 
+          setNews(news.map(n => n.id === u.id ? u : n)); 
+        }}
+        onDeleteNews={async id => { 
+          await supabase.from('news').delete().eq('id', id); 
+          setNews(news.filter(n => n.id !== id)); 
+        }}
+        onAddAchievement={async a => { 
+          const { data } = await supabase.from('achievements').insert([a]).select(); 
+          if (data && data[0]) setAchievements([data[0] as Achievement, ...achievements]); 
+        }}
+        onUpdateAchievement={async u => { 
+          await supabase.from('achievements').update(u).eq('id', u.id); 
+          setAchievements(achievements.map(a => a.id === u.id ? u : a)); 
+        }}
+        onDeleteAchievement={async id => { 
+          await supabase.from('achievements').delete().eq('id', id); 
+          setAchievements(achievements.filter(a => a.id !== id)); 
+        }}
+        onDeleteMessage={async id => { 
+          await supabase.from('messages').delete().eq('id', id); 
+          setMessages(messages.filter(m => m.id !== id)); 
+        }}
+        onDeleteEnrollment={async id => { 
+          await supabase.from('enrollments').delete().eq('id', id); 
+          setEnrollments(enrollments.filter(e => e.id !== id)); 
+        }}
         onExit={() => setActiveSection(AppSection.HOME)}
       />
     );
@@ -339,7 +387,6 @@ const App: React.FC = () => {
               </div>
             </div>
             
-            {/* Social Media Links Tiklandi */}
             <div className="flex gap-4 pt-6">
                {socialLinks.map(({Icon, link, color, label}, i) => (
                  <a 
@@ -386,7 +433,7 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* Detailed Modal (Courses & News) Tiklandi */}
+      {/* Detailed Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6 animate-fadeIn" onClick={() => setSelectedItem(null)}>
           <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-3xl animate-bounceIn" onClick={e => e.stopPropagation()}>
