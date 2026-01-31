@@ -1,4 +1,6 @@
 
+export type Language = 'uz' | 'ru' | 'en';
+
 export interface Course {
   id: string;
   title: string;
