@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowRight, Mail, Code2, Newspaper, Calendar, Sparkles, Trophy, MapPin, Phone, Loader2, X
+  ArrowRight, Mail, Code2, Newspaper, Calendar, Sparkles, Trophy, MapPin, Phone, Loader2, X,
+  Globe, Instagram, Youtube, Facebook, Send, ChevronRight, Menu
 } from 'lucide-react';
 import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem, GlobalStats, Language } from './types';
 import { translations } from './translations';
@@ -19,6 +21,7 @@ const App: React.FC = () => {
 
   const t = translations[lang];
 
+  // States for data
   const [courses, setCourses] = useState<Course[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -82,6 +85,10 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    localStorage.setItem('edu_lang', lang);
+  }, [lang]);
+
+  useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -99,7 +106,7 @@ const App: React.FC = () => {
     const { data, error } = await supabase.from('messages').insert([newMessage]).select();
     if (!error && data && data[0]) {
       setMessages([data[0] as ContactMessage, ...messages]);
-      alert("Yuborildi!");
+      alert(lang === 'uz' ? "Xabar yuborildi!" : (lang === 'ru' ? "Сообщение отправлено!" : "Message sent!"));
       e.currentTarget.reset();
     }
   };
@@ -107,9 +114,15 @@ const App: React.FC = () => {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+    setActiveSection(id as AppSection);
   };
 
-  if (isLoading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white"><Loader2 className="animate-spin" size={48} /></div>;
+  if (isLoading) return (
+    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white gap-4">
+      <Loader2 className="animate-spin text-indigo-500" size={64} />
+      <p className="font-black tracking-widest uppercase animate-pulse">IT Yakkabog' Academy</p>
+    </div>
+  );
 
   if (activeSection === AppSection.ADMIN) {
     if (!isLoggedIn) return <LoginForm onLogin={setIsLoggedIn} onCancel={() => setActiveSection(AppSection.HOME)} />;
@@ -136,124 +149,258 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className={`fixed w-full z-50 transition-all ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6'}`}>
+    <div className="min-h-screen bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Navigation */}
+      <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-indigo-50 py-3' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setLogoClicks(p => p+1); if(logoClicks >= 4) {setActiveSection(AppSection.ADMIN); setLogoClicks(0);} }}>
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><Code2 /></div>
-            <span className="text-xl font-black text-slate-900">IT YAKKABOG'</span>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { setLogoClicks(p => p+1); if(logoClicks >= 4) {setActiveSection(AppSection.ADMIN); setLogoClicks(0);} }}>
+            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform">
+              <Code2 size={28}/>
+            </div>
+            <div>
+              <span className="text-xl font-black text-slate-900 leading-none block">IT YAKKABOG'</span>
+              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Innovation Academy</span>
+            </div>
           </div>
-          <div className="hidden md:flex gap-8 items-center font-bold text-sm text-slate-500">
-            <button onClick={() => scrollTo('home')}>{t.navHome}</button>
-            <button onClick={() => scrollTo('courses')}>{t.navCourses}</button>
-            <button onClick={() => scrollTo('news')}>{t.navNews}</button>
-            <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-6 py-2.5 rounded-xl">{t.navEnroll}</button>
+          
+          <div className="hidden md:flex gap-8 items-center">
+            <div className="flex gap-8 font-bold text-sm text-slate-500">
+              <button onClick={() => scrollTo('home')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.HOME ? 'text-indigo-600' : ''}`}>{t.navHome}</button>
+              <button onClick={() => scrollTo('courses')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.COURSES ? 'text-indigo-600' : ''}`}>{t.navCourses}</button>
+              <button onClick={() => scrollTo('news')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.NEWS ? 'text-indigo-600' : ''}`}>{t.navNews}</button>
+              <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
+            </div>
+            
+            {/* Language Switcher */}
+            <div className="flex items-center bg-slate-100 rounded-2xl p-1.5 gap-1 border border-slate-200">
+               {(['uz', 'ru', 'en'] as Language[]).map(l => (
+                 <button 
+                  key={l} 
+                  onClick={() => setLang(l)} 
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${lang === l ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                 >
+                   {l}
+                 </button>
+               ))}
+            </div>
+            
+            <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-7 py-3 rounded-2xl font-black text-sm hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-100 transition-all">
+              {t.navEnroll}
+            </button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-40 pb-20 px-6 max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-        <div className="space-y-8 animate-slideUp">
-          <h1 className="text-7xl font-black text-slate-900 leading-none">{t.heroTitle}</h1>
-          <p className="text-xl text-slate-500 max-w-lg">{t.heroDesc}</p>
-          <button onClick={() => scrollTo('courses')} className="bg-indigo-600 text-white px-10 py-5 rounded-3xl font-black flex items-center gap-3 shadow-xl shadow-indigo-200">
-            {t.heroCTA} <ArrowRight />
-          </button>
-        </div>
-        <div className="rounded-[80px] overflow-hidden shadow-3xl aspect-[4/5] border-[16px] border-white">
-          <img src={teacherImage} className="w-full h-full object-cover" alt="Mentor" />
+      <section id="home" className="relative pt-48 pb-24 px-6 overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-indigo-50 -z-10 rounded-l-[300px] blur-3xl opacity-50"></div>
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+          <div className="space-y-10 animate-slideUp">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-2xl shadow-sm">
+              <Sparkles size={18} className="animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest">{t.heroBadge}</span>
+            </div>
+            <h1 className="text-7xl md:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
+              {t.heroTitle.split(' ')[0]} <br/> 
+              <span className="text-indigo-600">{t.heroTitle.split(' ').slice(1).join(' ')}</span>
+            </h1>
+            <p className="text-xl text-slate-500 max-w-lg font-medium leading-relaxed">{t.heroDesc}</p>
+            <div className="flex gap-4">
+              <button onClick={() => scrollTo('courses')} className="bg-indigo-600 text-white px-10 py-5 rounded-[32px] font-black text-lg flex items-center gap-3 shadow-2xl shadow-indigo-200 hover:scale-105 transition-all">
+                {t.heroCTA} <ArrowRight size={22}/>
+              </button>
+            </div>
+          </div>
+          <div className="relative animate-fadeIn">
+            <div className="relative z-10 rounded-[100px] overflow-hidden shadow-3xl aspect-[4/5] border-[20px] border-white">
+               <img src={teacherImage} className="w-full h-full object-cover" alt="Mentor" />
+            </div>
+            <div className="absolute -bottom-10 -left-10 bg-white p-8 rounded-[40px] shadow-2xl z-20 border border-slate-100 animate-bounceIn">
+               <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                    <Trophy size={32}/>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-slate-900">{globalStats.stat1Value}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{globalStats.stat1Label[lang]}</p>
+                  </div>
+               </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Courses */}
       <section id="courses" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-5xl font-black mb-16">{t.coursesTitle}</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+            <div className="space-y-4">
+              <span className="text-indigo-600 font-black uppercase text-xs tracking-widest block">{t.coursesSub}</span>
+              <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.coursesTitle}</h2>
+            </div>
+            <p className="text-slate-500 font-medium max-w-md">{lang === 'uz' ? "Bizning barcha kurslarimiz zamonaviy metodika va amaliyotga asoslangan." : "Все наши курсы основаны на современной методике и практике."}</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
             {courses.map(c => (
-              <div key={c.id} onClick={() => setSelectedItem({type:'course', data:c})} className="bg-slate-50 p-4 rounded-[48px] border border-slate-100 cursor-pointer hover:shadow-2xl transition-all">
-                <div className="h-64 rounded-[36px] overflow-hidden mb-6"><img src={c.image} className="w-full h-full object-cover" alt={c.title[lang]}/></div>
-                <div className="p-4"><h3 className="text-2xl font-black mb-2">{c.title[lang]}</h3><p className="text-slate-500 text-sm line-clamp-2">{c.description[lang]}</p></div>
+              <div key={c.id} onClick={() => setSelectedItem({type:'course', data:c})} className="group bg-slate-50 rounded-[60px] p-5 border border-slate-100 cursor-pointer hover:shadow-3xl hover:bg-white hover:-translate-y-4 transition-all duration-500">
+                <div className="h-72 w-full rounded-[48px] overflow-hidden mb-8 relative shadow-inner">
+                  <img src={c.image} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title[lang]}/>
+                  <div className="absolute top-4 left-4">
+                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category[lang]}</span>
+                  </div>
+                </div>
+                <div className="px-4 pb-6 space-y-4">
+                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title[lang]}</h3>
+                  <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description[lang]}</p>
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                    <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs uppercase tracking-widest">
+                       {t.courseMore} <ChevronRight size={16}/>
+                    </div>
+                    <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{c.duration[lang]}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-24 bg-slate-900 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+          {[
+            { val: globalStats.stat1Value, label: globalStats.stat1Label[lang] },
+            { val: globalStats.stat2Value, label: globalStats.stat2Label[lang] },
+            { val: globalStats.stat3Value, label: globalStats.stat3Label[lang] },
+            { val: globalStats.stat4Value, label: globalStats.stat4Label[lang] }
+          ].map((s, i) => (
+            <div key={i} className="space-y-3">
+              <p className="text-5xl font-black text-white tracking-tighter">{s.val}</p>
+              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">{s.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* News */}
-      <section id="news" className="py-32 px-6 bg-slate-50">
+      <section id="news" className="py-32 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-5xl font-black mb-16">{t.newsTitle}</h2>
+          <div className="text-center space-y-4 mb-20">
+            <span className="text-indigo-600 font-black uppercase text-xs tracking-widest">{t.newsSub}</span>
+            <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.newsTitle}</h2>
+          </div>
           <div className="grid md:grid-cols-3 gap-8">
             {news.map(n => (
-              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-white p-4 rounded-[40px] cursor-pointer hover:shadow-xl transition-all">
-                <div className="h-60 rounded-[30px] overflow-hidden mb-4"><img src={n.image} className="w-full h-full object-cover" /></div>
-                <div className="p-4"><h4 className="font-black text-xl mb-2">{n.title[lang]}</h4><p className="text-slate-400 text-xs flex items-center gap-2"><Calendar size={14}/> {n.date}</p></div>
+              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-white rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
+                <div className="h-64 rounded-[32px] overflow-hidden mb-6 relative">
+                  <img src={n.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                  <div className="absolute bottom-4 left-4">
+                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-slate-900 text-[10px] font-black uppercase shadow-lg">
+                      <Calendar size={14} className="text-indigo-600"/> {n.date}
+                    </div>
+                  </div>
+                </div>
+                <div className="px-2 pb-2 space-y-3">
+                  <h4 className="font-black text-xl text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">{n.title[lang]}</h4>
+                  <p className="text-slate-500 text-sm line-clamp-2 font-medium">{n.description[lang]}</p>
+                </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Achievements & Stats */}
-      <section id="achievements" className="py-32 bg-white px-6">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
-          <div className="space-y-12">
-            <h2 className="text-5xl font-black">{t.achievementsTitle}</h2>
-            <div className="space-y-6">
-              {achievements.map(a => (
-                <div key={a.id} className="flex gap-6 p-6 rounded-3xl hover:bg-slate-50 transition-all">
-                  <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0"><Trophy size={32}/></div>
-                  <div><h4 className="text-xl font-black">{a.title[lang]}</h4><p className="text-slate-500 text-sm">{a.description[lang]}</p></div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-indigo-600 p-8 rounded-[40px] text-white space-y-2">
-              <span className="text-4xl font-black">{globalStats.stat1Value}</span>
-              <p className="text-xs uppercase font-bold opacity-70">{globalStats.stat1Label[lang]}</p>
-            </div>
-            <div className="bg-slate-900 p-8 rounded-[40px] text-white space-y-2">
-              <span className="text-4xl font-black">{globalStats.stat2Value}</span>
-              <p className="text-xs uppercase font-bold opacity-70">{globalStats.stat2Label[lang]}</p>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Contact */}
-      <section id="contact" className="py-32 px-6 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20">
-          <div className="space-y-12">
-            <h2 className="text-6xl font-black">{t.contactTitle}</h2>
+      <section id="contact" className="py-32 px-6 bg-slate-900 overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-indigo-600/5 -z-10"></div>
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-24 items-center relative z-10">
+          <div className="text-white space-y-12 animate-fadeIn">
+            <h2 className="text-7xl font-black tracking-tighter leading-none">{t.contactTitle}</h2>
             <div className="space-y-8">
-              <div className="flex gap-6"><MapPin className="text-indigo-400"/><p>{contactInfo.address}</p></div>
-              <div className="flex gap-6"><Mail className="text-indigo-400"/><p>{contactInfo.email}</p></div>
-              <div className="flex gap-6"><Phone className="text-indigo-400"/><p>{contactInfo.phone}</p></div>
+              <div className="flex items-center gap-8">
+                <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center text-indigo-400 shadow-xl"><MapPin size={32}/></div>
+                <div><p className="text-white/40 text-[10px] font-black tracking-widest uppercase mb-1">{t.contactAddress}</p><p className="text-xl font-bold">{contactInfo.address}</p></div>
+              </div>
+              <div className="flex items-center gap-8">
+                <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center text-indigo-400 shadow-xl"><Mail size={32}/></div>
+                <div><p className="text-white/40 text-[10px] font-black tracking-widest uppercase mb-1">{t.contactEmail}</p><p className="text-xl font-bold">{contactInfo.email}</p></div>
+              </div>
+              <div className="flex items-center gap-8">
+                <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center text-indigo-400 shadow-xl"><Phone size={32}/></div>
+                <div><p className="text-white/40 text-[10px] font-black tracking-widest uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
+              </div>
+            </div>
+            <div className="flex gap-4 pt-4">
+               {[Instagram, Youtube, Facebook, Send].map((Icon, i) => (
+                 <a key={i} href="#" className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-indigo-600 hover:border-indigo-500 transition-all text-white/60 hover:text-white">
+                   <Icon size={20}/>
+                 </a>
+               ))}
             </div>
           </div>
-          <form onSubmit={handleSendMessage} className="bg-white p-12 rounded-[50px] space-y-4">
-            <h3 className="text-slate-900 text-3xl font-black mb-4">{t.contactFormTitle}</h3>
-            <input name="name" required placeholder={t.contactFormName} className="w-full p-4 bg-slate-50 border rounded-2xl text-slate-900 outline-none" />
-            <input name="email" required placeholder={t.contactFormEmail} className="w-full p-4 bg-slate-50 border rounded-2xl text-slate-900 outline-none" />
-            <textarea name="message" required rows={4} placeholder={t.contactFormMsg} className="w-full p-4 bg-slate-50 border rounded-2xl text-slate-900 outline-none" />
-            <button type="submit" className="w-full bg-indigo-600 py-4 rounded-2xl font-black text-lg shadow-xl shadow-indigo-100">Yuborish</button>
-          </form>
+          
+          <div className="bg-white p-12 rounded-[64px] shadow-3xl animate-slideUp">
+            <h3 className="text-3xl font-black text-slate-900 mb-8">{t.contactFormTitle}</h3>
+            <form onSubmit={handleSendMessage} className="space-y-5">
+              <div className="grid md:grid-cols-2 gap-5">
+                <input name="name" required placeholder={t.contactFormName} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                <input name="email" required placeholder={t.contactFormEmail} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-2 focus:ring-indigo-500/20" />
+              </div>
+              <textarea name="message" required placeholder={t.contactFormMsg} rows={4} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-2 focus:ring-indigo-500/20"></textarea>
+              <button type="submit" className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-lg shadow-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3">
+                {t.contactFormSubmit} <ArrowRight size={20}/>
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
+      {/* Footer */}
+      <footer className="py-12 border-t border-slate-200 bg-white px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><Code2 size={24}/></div>
+            <span className="font-black text-lg text-slate-900">IT YAKKABOG' Academy</span>
+          </div>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] text-center">{t.footerCopyright}</p>
+          <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline flex items-center gap-2">
+            {t.footerUp} <ChevronRight size={14} className="-rotate-90" />
+          </button>
+        </div>
+      </footer>
+
+      {/* Detailed Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6" onClick={() => setSelectedItem(null)}>
-          <div className="bg-white rounded-[60px] max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="w-full md:w-2/5 h-64 md:h-auto"><img src={selectedItem.data.image} className="w-full h-full object-cover" /></div>
-            <div className="flex-1 p-12 overflow-y-auto space-y-6">
-              <div className="flex justify-between items-start">
-                <h2 className="text-4xl font-black">{selectedItem.data.title[lang]}</h2>
-                <button onClick={() => setSelectedItem(null)} className="p-2 bg-slate-100 rounded-full"><X size={20}/></button>
+        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6 animate-fadeIn" onClick={() => setSelectedItem(null)}>
+          <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-3xl animate-bounceIn" onClick={e => e.stopPropagation()}>
+            <div className="w-full md:w-2/5 h-64 md:h-auto relative overflow-hidden">
+              <img src={selectedItem.data.image} className="w-full h-full object-cover" alt={selectedItem.data.title[lang]}/>
+              <button onClick={() => setSelectedItem(null)} className="absolute top-8 left-8 p-4 bg-white/20 backdrop-blur-xl rounded-full text-white hover:bg-white/40 border border-white/30 transition-all"><X size={24}/></button>
+            </div>
+            <div className="flex-1 p-14 overflow-y-auto space-y-10">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                   <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase shadow-sm border border-indigo-100">
+                     {selectedItem.data.category ? selectedItem.data.category[lang] : (lang === 'uz' ? 'Yangiliklar' : 'Новости')}
+                   </span>
+                   {selectedItem.data.duration && <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{selectedItem.data.duration[lang]}</span>}
+                </div>
+                <h2 className="text-5xl font-black text-slate-900 leading-tight tracking-tight">{selectedItem.data.title[lang]}</h2>
               </div>
-              <p className="text-slate-600 text-lg leading-relaxed">{(selectedItem.data.content?.[lang]) || (selectedItem.data.description?.[lang])}</p>
+              
+              <div className="prose prose-slate max-w-none">
+                <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium shadow-inner">
+                   {(selectedItem.data.content?.[lang]) || (selectedItem.data.description?.[lang])}
+                </div>
+              </div>
+
+              {selectedItem.type === 'course' && (
+                <div className="pt-6 border-t border-slate-100">
+                  <button onClick={() => { setShowEnrollForm(true); setSelectedItem(null); setTimeout(() => scrollTo('contact'), 100); }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">
+                    {t.navEnroll}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

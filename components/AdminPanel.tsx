@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { 
   LayoutDashboard, BookOpen, Plus, Trash2, Edit3, ArrowLeft, Award, Save, X, 
@@ -89,7 +90,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   const SidebarBtn = ({ id, icon: Icon, label, count }: any) => (
     <button 
       onClick={() => setActiveTab(id)} 
-      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${activeTab === id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-500 hover:bg-slate-100'}`}
+      className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all ${activeTab === id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-100'}`}
     >
       <div className="flex items-center gap-3">
         <Icon size={18}/>
@@ -104,25 +105,25 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   );
 
   const LocalizedInput = ({ label, value, onChange, isTextArea = false }: { label: string, value: LocalizedText, onChange: (val: LocalizedText) => void, isTextArea?: boolean }) => (
-    <div className="space-y-4 p-5 bg-slate-50 rounded-3xl border border-slate-200 shadow-sm">
-      <div className="flex items-center gap-2">
+    <div className="space-y-4 p-6 bg-slate-50 rounded-[32px] border border-slate-200 shadow-sm">
+      <div className="flex items-center gap-2 mb-2">
         <Globe size={14} className="text-indigo-600" />
-        <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{label}</p>
+        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{label}</p>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {(['uz', 'ru', 'en'] as const).map((l) => (
-          <div key={l} className="flex gap-2">
+          <div key={l} className="flex gap-3">
             <span className="w-10 shrink-0 flex items-center justify-center font-black text-[10px] uppercase text-slate-400 bg-white border border-slate-200 rounded-xl">{l}</span>
             {isTextArea ? (
               <textarea 
-                className="w-full p-3 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
+                className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
                 rows={3}
                 value={value[l] || ''} 
                 onChange={(e) => onChange({ ...value, [l]: e.target.value })}
               />
             ) : (
               <input 
-                className="w-full p-3 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
+                className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
                 value={value[l] || ''} 
                 onChange={(e) => onChange({ ...value, [l]: e.target.value })}
               />
@@ -135,15 +136,16 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
+      {/* Admin Sidebar */}
       <aside className="w-72 bg-white border-r fixed inset-y-0 left-0 z-50 flex flex-col shadow-xl">
         <div className="p-8 flex items-center gap-3 text-indigo-600">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
             <Code2 size={24} />
           </div>
-          <span className="text-xl font-black uppercase tracking-tighter">Admin <span className="text-slate-900">Edu</span></span>
+          <span className="text-xl font-black uppercase tracking-tighter">Admin <span className="text-slate-900">Portal</span></span>
         </div>
         
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-8">
+        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto pb-8">
           <SidebarBtn id={AdminSubSection.DASHBOARD} icon={LayoutDashboard} label="Boshqaruv paneli" />
           <SidebarBtn id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslar" count={props.courses.length} />
           <SidebarBtn id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" count={props.news.length} />
@@ -156,20 +158,48 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         </nav>
         
         <div className="p-6 border-t bg-slate-50">
-          <button onClick={props.onExit} className="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 p-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm hover:shadow-md transition-all">
+          <button onClick={props.onExit} className="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 p-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm hover:shadow-md transition-all">
             <ArrowLeft size={16}/> Saytga qaytish
           </button>
         </div>
       </aside>
 
+      {/* Main Admin Content */}
       <main className="flex-1 ml-72 p-12 overflow-y-auto">
         <div className="max-w-6xl mx-auto space-y-12 pb-24">
           
+          {/* Dashboard Tab */}
+          {activeTab === AdminSubSection.DASHBOARD && (
+             <div className="space-y-10 animate-fadeIn">
+                <div>
+                  <h1 className="text-4xl font-black text-slate-900 tracking-tight">Xush kelibsiz!</h1>
+                  <p className="text-slate-500 font-medium">Barcha ko'rsatkichlar joyida.</p>
+                </div>
+                <div className="grid grid-cols-4 gap-6">
+                  {[
+                    { label: 'Kurslar', val: props.courses.length, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { label: 'Arizalar', val: props.enrollments.length, icon: UserCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                    { label: 'Xabarlar', val: props.messages.length, icon: MessageSquare, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                    { label: 'Yangiliklar', val: props.news.length, icon: Newspaper, color: 'text-amber-600', bg: 'bg-amber-50' }
+                  ].map((s, i) => (
+                    <div key={i} className="bg-white p-10 rounded-[48px] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
+                      <div className={`${s.bg} ${s.color} w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                        <s.icon size={24} />
+                      </div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
+                      <p className="text-4xl font-black text-slate-900 mt-2">{s.val}</p>
+                    </div>
+                  ))}
+                </div>
+             </div>
+          )}
+
+          {/* Achievement / Stats Management Tab */}
           {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
             <div className="space-y-12 animate-fadeIn">
-              <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><BarChart3 size={28} className="text-indigo-600"/> Statistika</h2>
+              <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><BarChart3 size={28} className="text-indigo-600"/> Statistikani Tahrirlash</h2>
               <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl space-y-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {[1, 2, 3, 4].map(num => {
                     const labelKey = `stat${num}Label` as keyof GlobalStats;
                     const valueKey = `stat${num}Value` as keyof GlobalStats;
@@ -180,75 +210,261 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
                           value={statsForm[labelKey] as LocalizedText} 
                           onChange={val => setStatsForm(prev => ({...prev, [labelKey]: val} as GlobalStats))} 
                         />
-                        <div className="space-y-1 ml-1">
+                        <div className="space-y-2 ml-2">
                           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Qiymat (masalan: 98%)</p>
                           <input 
                             type="text" 
                             value={statsForm[valueKey] as string} 
                             onChange={e => setStatsForm(prev => ({...prev, [valueKey]: e.target.value} as GlobalStats))} 
-                            className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" 
+                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" 
                           />
                         </div>
                       </div>
                     );
                   })}
                 </div>
-                <button onClick={() => props.onUpdateGlobalStats(statsForm)} className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3">
+                <button onClick={() => props.onUpdateGlobalStats(statsForm)} className="w-full bg-slate-900 text-white py-6 rounded-[32px] font-black text-xl shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3">
                   <Save size={24}/> Statistikani Saqlash
                 </button>
               </div>
             </div>
           )}
 
-          {/* ... Boshqa tablar bir xil qoladi, faqat tepadagi statistika qismi tsc build'ni buzmasligi uchun explicit cast qilindi ... */}
-          {activeTab === AdminSubSection.DASHBOARD && (
-             <div className="space-y-8 animate-fadeIn">
-               <h1 className="text-4xl font-black text-slate-900 tracking-tight">Xush kelibsiz!</h1>
-               <div className="grid grid-cols-4 gap-6">
-                 {[
-                   { label: 'Kurslar', val: props.courses.length, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
-                   { label: 'Arizalar', val: props.enrollments.length, icon: UserCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                   { label: 'Xabarlar', val: props.messages.length, icon: MessageSquare, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                   { label: 'Yangiliklar', val: props.news.length, icon: Newspaper, color: 'text-amber-600', bg: 'bg-amber-50' }
-                 ].map((s, i) => (
-                   <div key={i} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-                     <div className={`${s.bg} ${s.color} w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                       <s.icon size={24} />
-                     </div>
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
-                     <p className="text-4xl font-black text-slate-900 mt-2">{s.val}</p>
-                   </div>
-                 ))}
-               </div>
-             </div>
-          )}
-          
-          {/* AI Generator qismi */}
-          {activeTab === AdminSubSection.AI_TOOLS && (
+          {/* Course Management Tab */}
+          {activeTab === AdminSubSection.COURSE_MGMT && (
             <div className="space-y-8 animate-fadeIn">
-              <div className="bg-white p-10 rounded-[48px] border border-slate-100 shadow-xl space-y-8">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="Kurs nomi..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
-                  <input value={aiCategory} onChange={e => setAiCategory(e.target.value)} placeholder="Yo'nalish..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
-                </div>
-                <button onClick={handleAiGenerate} disabled={isGenerating || !aiPrompt} className="w-full bg-slate-900 text-white py-5 rounded-3xl font-black flex items-center justify-center gap-3">
-                  {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 size={20} />} Generatsiya
+              <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-black text-slate-900">Kurslarni Boshqarish</h2>
+                <button onClick={() => { 
+                  setEditingCourse(null); 
+                  setCourseForm({ title: emptyLocalized(), description: emptyLocalized(), category: emptyLocalized(), duration: emptyLocalized(), students: 0, content: emptyLocalized(), image: '' }); 
+                  setShowCourseModal(true); 
+                }} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">
+                  <Plus size={20}/> Yangi Kurs
                 </button>
               </div>
-              {generatedOutline.length > 0 && (
-                <div className="grid gap-4">
-                  {generatedOutline.map((item, idx) => (
-                    <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                      <h4 className="font-black text-slate-900">{item.chapter}</h4>
-                      <p className="text-slate-500 text-sm">{item.description}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {props.courses.map(c => (
+                  <div key={c.id} className="bg-white p-6 rounded-[40px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-6">
+                      <div className="w-20 h-20 rounded-3xl overflow-hidden shadow-inner bg-slate-50 border">
+                        <img src={c.image} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-xl text-slate-900">{c.title.uz}</h4>
+                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{c.category.uz}</p>
+                      </div>
                     </div>
-                  ))}
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingCourse(c); setCourseForm(c); setShowCourseModal(true); }} className="p-4 bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><Edit3 size={18}/></button>
+                      <button onClick={() => { if(confirm('O\'chirmoqchimisiz?')) props.onDeleteCourse(c.id); }} className="p-4 bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18}/></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AI Tools Tab */}
+          {activeTab === AdminSubSection.AI_TOOLS && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl space-y-8">
+                <div className="max-w-3xl space-y-4">
+                  <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><Sparkles size={28} className="text-indigo-600"/> AI Kurs Rejasini Yaratish</h2>
+                  <p className="text-slate-500 font-medium">Gemini 3.0 Flash yordamida har qanday o'quv kursi uchun professional syllabus (reja) yarating.</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Kurs Nomi</p>
+                    <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="Dasturlash / Matematika..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Yo'nalish</p>
+                    <input value={aiCategory} onChange={e => setAiCategory(e.target.value)} placeholder="IT / Gumanitar..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
+                  </div>
+                </div>
+                <button onClick={handleAiGenerate} disabled={isGenerating || !aiPrompt} className="w-full bg-slate-900 text-white py-5 rounded-[24px] font-black text-lg flex items-center justify-center gap-3 hover:bg-slate-800 transition shadow-xl shadow-slate-200 disabled:opacity-50">
+                  {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 size={20} />} 
+                  {isGenerating ? "AI Reja Yaratmoqda..." : "Generatsiya Qilish"}
+                </button>
+              </div>
+              
+              {generatedOutline.length > 0 && (
+                <div className="animate-slideUp space-y-6">
+                  <div className="flex justify-between items-center">
+                     <h3 className="text-xl font-black text-slate-900">AI Tomonidan Tavsiya Etilgan Reja:</h3>
+                     <button onClick={() => { navigator.clipboard.writeText(JSON.stringify(generatedOutline, null, 2)); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); }} className="flex items-center gap-2 text-indigo-600 font-bold text-sm bg-indigo-50 px-4 py-2 rounded-xl">
+                        {isCopied ? <Check size={16}/> : <Copy size={16}/>} {isCopied ? "Nusxalandi" : "Nusxa Olish"}
+                     </button>
+                  </div>
+                  <div className="grid gap-4">
+                    {generatedOutline.map((item, idx) => (
+                      <div key={idx} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex gap-6 items-start">
+                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-black shrink-0">{idx + 1}</div>
+                        <div>
+                          <h4 className="font-black text-slate-900 text-lg mb-2">{item.chapter}</h4>
+                          <p className="text-slate-500 text-sm leading-relaxed">{item.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
           )}
+
+          {/* Contact Info Management Tab */}
+          {activeTab === AdminSubSection.CONTACT_MGMT && (
+             <div className="space-y-8 animate-fadeIn">
+               <h2 className="text-3xl font-black text-slate-900">Aloqa Ma'lumotlari</h2>
+               <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl space-y-8 max-w-2xl">
+                 <div className="space-y-6">
+                   <div className="space-y-2">
+                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Manzil</p>
+                     <input value={contactForm.address} onChange={e => setContactForm({...contactForm, address: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                   </div>
+                   <div className="space-y-2">
+                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Email</p>
+                     <input value={contactForm.email} onChange={e => setContactForm({...contactForm, email: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                   </div>
+                   <div className="space-y-2">
+                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-2">Telefon</p>
+                     <input value={contactForm.phone} onChange={e => setContactForm({...contactForm, phone: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                   </div>
+                 </div>
+                 <button onClick={() => props.onUpdateContactInfo(contactForm)} className="w-full bg-slate-900 text-white py-6 rounded-[32px] font-black text-lg shadow-2xl hover:bg-slate-800 transition-all">
+                   Ma'lumotlarni Saqlash
+                 </button>
+               </div>
+             </div>
+          )}
+
+          {/* Profile Management Tab */}
+          {activeTab === AdminSubSection.PROFILE_MGMT && (
+            <div className="space-y-8 animate-fadeIn">
+              <h2 className="text-3xl font-black text-slate-900">Profil / Mentor Rasmi</h2>
+              <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl flex flex-col items-center gap-10 max-w-xl">
+                <div className="w-64 h-80 rounded-[48px] overflow-hidden border-8 border-slate-50 shadow-2xl">
+                  <img src={props.teacherImage} className="w-full h-full object-cover" />
+                </div>
+                <div className="w-full space-y-4">
+                  <button onClick={() => profileFileInputRef.current?.click()} className="w-full bg-indigo-600 text-white py-5 rounded-[24px] font-black shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-3">
+                    <Camera size={20}/> Rasmni O'zgartirish
+                  </button>
+                  <input type="file" ref={profileFileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'profile')} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Messages Management Tab */}
+          {activeTab === AdminSubSection.MESSAGES && (
+            <div className="space-y-8 animate-fadeIn">
+               <h2 className="text-3xl font-black text-slate-900">Xabarlar</h2>
+               {props.messages.length === 0 ? (
+                 <div className="text-center py-20 bg-white rounded-[40px] border border-slate-100"><p className="text-slate-400 font-bold">Hozircha xabarlar yo'q.</p></div>
+               ) : (
+                 <div className="space-y-4">
+                    {props.messages.map(m => (
+                      <div key={m.id} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex justify-between items-start">
+                        <div className="space-y-4 max-w-3xl">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-black">{m.name.charAt(0)}</div>
+                            <div>
+                              <p className="font-black text-slate-900">{m.name}</p>
+                              <p className="text-xs text-slate-400 font-bold">{m.email} • {new Date(m.date).toLocaleString()}</p>
+                            </div>
+                          </div>
+                          <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 text-slate-600 font-medium">
+                            {m.message}
+                          </div>
+                        </div>
+                        <button onClick={() => props.onDeleteMessage(m.id)} className="p-4 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={20}/></button>
+                      </div>
+                    ))}
+                 </div>
+               )}
+            </div>
+          )}
+
+          {/* Enrollments Tab */}
+          {activeTab === AdminSubSection.ENROLLMENTS && (
+            <div className="space-y-8 animate-fadeIn">
+               <h2 className="text-3xl font-black text-slate-900">Kursga Arizalar</h2>
+               <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100">
+                        <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">O'quvchi</th>
+                        <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Kurs</th>
+                        <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Telefon</th>
+                        <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Sana</th>
+                        <th className="px-8 py-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Amal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {props.enrollments.map(e => (
+                        <tr key={e.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-8 py-6 font-black text-slate-900">{e.studentName}</td>
+                          <td className="px-8 py-6 font-bold text-indigo-600">{e.courseTitle}</td>
+                          <td className="px-8 py-6 text-slate-500 font-medium">{e.studentPhone}</td>
+                          <td className="px-8 py-6 text-slate-400 text-xs font-bold">{new Date(e.date).toLocaleDateString()}</td>
+                          <td className="px-8 py-6 text-right">
+                            <button onClick={() => props.onDeleteEnrollment(e.id)} className="text-rose-400 hover:text-rose-600 p-2"><Trash2 size={18}/></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+               </div>
+            </div>
+          )}
+
         </div>
       </main>
+
+      {/* Shared Modals for Course/News */}
+      {showCourseModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-xl">
+          <div className="bg-white rounded-[60px] p-12 w-full max-w-5xl shadow-3xl overflow-y-auto max-h-[90vh] space-y-10 animate-slideUp">
+            <div className="flex justify-between items-center">
+              <h2 className="text-4xl font-black text-slate-900">{editingCourse ? 'Kursni Tahrirlash' : 'Yangi Kurs'}</h2>
+              <button onClick={() => setShowCourseModal(false)} className="p-4 bg-slate-50 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"><X size={24}/></button>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-10">
+              <div className="space-y-8">
+                <div className="p-8 bg-slate-50 rounded-[48px] border border-slate-100 flex flex-col items-center gap-6">
+                  <div className="w-full aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-slate-200">
+                    {courseForm.image ? <img src={courseForm.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">Rasm Tanlang</div>}
+                  </div>
+                  <button onClick={() => fileInputRef.current?.click()} className="px-8 py-4 bg-white border border-slate-200 text-indigo-600 rounded-2xl font-black text-sm uppercase tracking-widest shadow-sm hover:shadow-md transition-all">Rasm Yuklash</button>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'course')}/>
+                </div>
+                <LocalizedInput label="Kurs Nomi" value={courseForm.title as LocalizedText} onChange={val => setCourseForm({...courseForm, title: val})} />
+                <LocalizedInput label="Kategoriya" value={courseForm.category as LocalizedText} onChange={val => setCourseForm({...courseForm, category: val})} />
+              </div>
+
+              <div className="space-y-8">
+                <LocalizedInput label="Davomiyligi" value={courseForm.duration as LocalizedText} onChange={val => setCourseForm({...courseForm, duration: val})} />
+                <div className="space-y-2 ml-2">
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">O'quvchilar Soni</p>
+                  <input type="number" value={courseForm.students || 0} onChange={e => setCourseForm({...courseForm, students: parseInt(e.target.value) || 0})} className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                </div>
+                <LocalizedInput label="Qisqa Tavsif" value={courseForm.description as LocalizedText} onChange={val => setCourseForm({...courseForm, description: val})} isTextArea />
+                <LocalizedInput label="To'liq Mazmuni" value={courseForm.content as LocalizedText} onChange={val => setCourseForm({...courseForm, content: val})} isTextArea />
+              </div>
+            </div>
+
+            <button onClick={() => { 
+              if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); 
+              else props.onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseForm} as Course); 
+              setShowCourseModal(false); 
+            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">Saqlash</button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
