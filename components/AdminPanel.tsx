@@ -1,43 +1,14 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Sparkles, 
-  Plus, 
-  Trash2, 
-  Edit3, 
-  ArrowLeft,
-  Loader2,
-  Award,
-  Save,
-  X,
-  Upload,
-  Image as ImageIcon,
-  User as UserIcon,
-  Phone,
-  MessageSquare,
-  UserCheck,
-  GraduationCap,
-  Check,
-  Camera,
-  Calendar,
-  AlertCircle,
-  Newspaper,
-  Video,
-  Code2
+  LayoutDashboard, BookOpen, Sparkles, Plus, Trash2, Edit3, ArrowLeft, Loader2, Award, Save, X, 
+  Upload, Image as ImageIcon, User as UserIcon, Phone, MessageSquare, UserCheck, Code2, 
+  Check, Camera, Calendar, Newspaper, Video, Mail, MapPin, Send, Instagram, Youtube, Facebook 
 } from 'lucide-react';
 import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
 import { AdminSubSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem } from '../types';
-import { PERFORMANCE_DATA } from '../constants';
 import { generateCourseOutline } from '../services/geminiService';
 
 interface AdminPanelProps {
@@ -64,195 +35,187 @@ interface AdminPanelProps {
   onExit: () => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ 
-  courses, 
-  achievements,
-  news,
-  teacherImage,
-  contactInfo,
-  messages,
-  enrollments,
-  onUpdateTeacherImage,
-  onUpdateContactInfo,
-  onAddCourse, 
-  onUpdateCourse,
-  onDeleteCourse, 
-  onAddAchievement,
-  onUpdateAchievement,
-  onDeleteAchievement,
-  onAddNews,
-  onUpdateNews,
-  onDeleteNews,
-  onDeleteMessage,
-  onDeleteEnrollment,
-  onExit 
-}) => {
+const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   const [activeTab, setActiveTab] = useState<AdminSubSection>(AdminSubSection.DASHBOARD);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-  const [aiResult, setAiResult] = useState<any>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   
   // Modals state
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  const [showAchievementModal, setShowAchievementModal] = useState(false);
-  const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
+  
   const [showNewsModal, setShowNewsModal] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
   
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
+  
   // Forms state
-  const [courseFormData, setCourseFormData] = useState({
-    title: '', category: '', description: '', duration: '3 oy', image: '', students: 0, content: ''
-  });
+  const [courseForm, setCourseForm] = useState<Partial<Course>>({});
+  const [newsForm, setNewsForm] = useState<Partial<NewsItem>>({});
+  const [achForm, setAchForm] = useState<Partial<Achievement>>({});
+  const [contactForm, setContactForm] = useState<ContactInfo>(props.contactInfo);
 
-  const [achievementFormData, setAchievementFormData] = useState({
-    title: '', date: '', description: '', content: ''
-  });
-
-  const [newsFormData, setNewsFormData] = useState({
-    title: '', date: new Date().toLocaleDateString('uz-UZ'), description: '', content: '', image: '', videoUrl: ''
-  });
-
-  const [contactData, setContactData] = useState<ContactInfo>(contactInfo);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileFileInputRef = useRef<HTMLInputElement>(null);
   const newsFileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setContactData(contactInfo);
-  }, [contactInfo]);
-
-  const handleSaveContacts = () => {
-    setSaveStatus('saving');
-    onUpdateContactInfo(contactData);
-    setTimeout(() => {
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    }, 800);
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'course' | 'profile' | 'news') => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'course' | 'news' | 'profile') => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Rasm hajmi juda katta (maksimal 5MB)");
-        return;
-      }
-
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64String = reader.result as string;
-        if (target === 'course') {
-          setCourseFormData(prev => ({ ...prev, image: base64String }));
-        } else if (target === 'profile') {
-          onUpdateTeacherImage(base64String);
-        } else if (target === 'news') {
-          setNewsFormData(prev => ({ ...prev, image: base64String }));
-        }
+        const url = reader.result as string;
+        if (target === 'course') setCourseForm(p => ({ ...p, image: url }));
+        else if (target === 'news') setNewsForm(p => ({ ...p, image: url }));
+        else if (target === 'profile') props.onUpdateTeacherImage(url);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const openAddNewsModal = () => {
-    setEditingNews(null);
-    setNewsFormData({ title: '', date: new Date().toLocaleDateString('uz-UZ'), description: '', content: '', image: '', videoUrl: '' });
-    setShowNewsModal(true);
-  };
-
-  const openEditNewsModal = (item: NewsItem) => {
-    setEditingNews(item);
-    setNewsFormData({
-      title: item.title,
-      date: item.date,
-      description: item.description,
-      content: item.content,
-      image: item.image,
-      videoUrl: item.videoUrl || ''
-    });
-    setShowNewsModal(true);
-  };
-
-  const handleGenerateOutline = async () => {
-    if (!courseFormData.title) {
-      setAiError("Iltimos, avval kurs nomini kiriting!");
-      return;
-    }
-    setIsGenerating(true);
-    setAiError(null);
+  const handleAiGeneration = async () => {
+    if (!courseForm.title) return setAiError("Iltimos, avval kurs nomini kiriting.");
+    setIsGenerating(true); setAiError(null);
     try {
-      const res = await generateCourseOutline(courseFormData.title, courseFormData.category || 'Ta\'lim');
-      if (res && res.outline) {
-        setAiResult(res.outline);
-      } else {
-        throw new Error("Ma'lumot olinmadi.");
-      }
-    } catch (err) {
-      setAiError("AI bilan bog'lanishda xatolik yuz berdi.");
+      const res = await generateCourseOutline(courseForm.title, courseForm.category || 'Dasturlash');
+      const text = res.outline.map((o: any) => `### ${o.chapter}\n${o.description}`).join('\n\n');
+      setCourseForm(p => ({ ...p, content: text }));
+    } catch (e) {
+      setAiError("AI xizmatida xatolik yuz berdi.");
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const SidebarItem = ({ id, icon: Icon, label, count }: { id: AdminSubSection, icon: any, label: string, count?: number }) => (
-    <button
-      onClick={() => setActiveTab(id)}
-      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
-        activeTab === id ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-100'
-      }`}
-    >
-      <div className="flex items-center space-x-3">
-        <Icon size={20} />
-        <span className="font-medium text-sm">{label}</span>
-      </div>
-      {count !== undefined && count > 0 && (
-        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${activeTab === id ? 'bg-white text-indigo-600' : 'bg-indigo-600 text-white'}`}>{count}</span>
-      )}
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const statsData = [
+    { name: 'Kurslar', value: props.courses.length },
+    { name: 'Arizalar', value: props.enrollments.length },
+    { name: 'Xabarlar', value: props.messages.length },
+    { name: 'Yangiliklar', value: props.news.length }
+  ];
+
+  const SidebarBtn = ({ id, icon: Icon, label, count }: any) => (
+    <button onClick={() => setActiveTab(id)} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${activeTab === id ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-100'}`}>
+      <div className="flex items-center gap-3"><Icon size={18}/><span className="text-sm font-semibold">{label}</span></div>
+      {count > 0 && <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${activeTab === id ? 'bg-white text-indigo-600' : 'bg-indigo-600 text-white'}`}>{count}</span>}
     </button>
   );
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col fixed inset-y-0 left-0 z-50 overflow-y-auto">
-        <div className="p-6 flex items-center space-x-2 text-indigo-600">
-          <Code2 className="w-8 h-8" />
-          <span className="text-xl font-black tracking-tight uppercase">IT Yakkabog'</span>
+    <div className="flex min-h-screen bg-slate-50">
+      <aside className="w-64 bg-white border-r fixed inset-y-0 left-0 z-50 flex flex-col">
+        <div className="p-8 flex items-center gap-2 text-indigo-600">
+          <Code2 size={32} /><span className="text-xl font-black uppercase">IT Yakkabog'</span>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
-          <SidebarItem id={AdminSubSection.DASHBOARD} icon={LayoutDashboard} label="Asosiy statistika" />
-          <SidebarItem id={AdminSubSection.PROFILE_MGMT} icon={UserIcon} label="Profil rasmi" />
-          <SidebarItem id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" />
-          <SidebarItem id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslarni boshqarish" />
-          <SidebarItem id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar" />
-          <SidebarItem id={AdminSubSection.CONTACT_MGMT} icon={Phone} label="Kontaktlar" />
-          <SidebarItem id={AdminSubSection.ENROLLMENTS} icon={UserCheck} label="Arizalar" count={enrollments.length} />
-          <SidebarItem id={AdminSubSection.MESSAGES} icon={MessageSquare} label="Xabarlar" count={messages.length} />
-          <SidebarItem id={AdminSubSection.AI_TOOLS} icon={Sparkles} label="AI Yordamchi" />
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          <SidebarBtn id={AdminSubSection.DASHBOARD} icon={LayoutDashboard} label="Asosiy" />
+          <SidebarBtn id={AdminSubSection.PROFILE_MGMT} icon={UserIcon} label="Profil rasmi" />
+          <SidebarBtn id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslar" count={props.courses.length} />
+          <SidebarBtn id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" count={props.news.length} />
+          <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar" count={props.achievements.length} />
+          <SidebarBtn id={AdminSubSection.ENROLLMENTS} icon={UserCheck} label="Arizalar" count={props.enrollments.length} />
+          <SidebarBtn id={AdminSubSection.MESSAGES} icon={MessageSquare} label="Xabarlar" count={props.messages.length} />
+          <SidebarBtn id={AdminSubSection.CONTACT_MGMT} icon={Phone} label="Kontaktlar" />
+          <SidebarBtn id={AdminSubSection.AI_TOOLS} icon={Sparkles} label="AI Yordamchi" />
         </nav>
-        <div className="p-4 border-t border-slate-100">
-          <button onClick={onExit} className="w-full flex items-center space-x-2 text-slate-500 hover:text-indigo-600 p-2 transition-colors">
-            <ArrowLeft size={18} />
-            <span className="text-sm font-medium">Saytga qaytish</span>
+        <div className="p-4 border-t">
+          <button onClick={props.onExit} className="w-full flex items-center gap-2 text-slate-500 hover:text-indigo-600 p-2 font-bold text-sm">
+            <ArrowLeft size={16}/> Saytga qaytish
           </button>
         </div>
       </aside>
 
-      <main className="flex-1 ml-64 p-8 min-h-screen bg-slate-50">
+      <main className="flex-1 ml-64 p-10">
         <div className="max-w-6xl mx-auto">
+          
           {activeTab === AdminSubSection.DASHBOARD && (
             <div className="space-y-10 animate-fadeIn">
-              <h1 className="text-3xl font-black text-slate-900">Dashboard</h1>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  { label: 'Jami Kurslar', value: courses.length, bg: 'bg-blue-600' },
-                  { label: 'Yangiliklar', value: news.length, bg: 'bg-indigo-600' },
-                  { label: 'Arizalar', value: enrollments.length, bg: 'bg-emerald-600' },
-                  { label: 'Xabarlar', value: messages.length, bg: 'bg-amber-600' }
-                ].map((stat, i) => (
-                  <div key={i} className={`${stat.bg} p-6 rounded-3xl text-white shadow-xl`}>
-                    <p className="text-xs font-black opacity-80 uppercase mb-2">{stat.label}</p>
-                    <p className="text-4xl font-black">{stat.value}</p>
+              <h1 className="text-3xl font-black">Dashboard</h1>
+              <div className="grid grid-cols-4 gap-6">
+                {statsData.map((s, i) => (
+                  <div key={i} className="bg-white p-8 rounded-[32px] border shadow-sm">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.name}</p>
+                    <p className="text-4xl font-black text-slate-900 mt-2">{s.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-8 h-80">
+                <div className="bg-white p-8 rounded-[40px] border shadow-sm">
+                  <h3 className="font-bold mb-6 text-slate-500">Oylik statistika</h3>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={statsData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                      <YAxis hide />
+                      <Tooltip cursor={{fill: '#f8fafc'}} />
+                      <Bar dataKey="value" fill="#6366f1" radius={[10, 10, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="bg-white p-8 rounded-[40px] border shadow-sm">
+                   <h3 className="font-bold mb-6 text-slate-500">Tarkib taqsimoti</h3>
+                   <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={statsData} dataKey="value" innerRadius={60} outerRadius={80} paddingAngle={5}>
+                        {statsData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.AI_TOOLS && (
+            <div className="max-w-2xl animate-fadeIn space-y-8">
+              <h2 className="text-2xl font-black flex items-center gap-2 text-amber-500"><Sparkles/> AI Kurs Rejalashtiruvchisi</h2>
+              <div className="bg-white p-10 rounded-[40px] border shadow-xl space-y-6">
+                <input 
+                  type="text" 
+                  placeholder="Kurs nomini kiriting (masalan: Java Backend)" 
+                  value={courseForm.title || ''}
+                  onChange={e => setCourseForm({...courseForm, title: e.target.value})}
+                  className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-lg font-bold"
+                />
+                <button 
+                  onClick={handleAiGeneration}
+                  disabled={isGenerating}
+                  className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl"
+                >
+                  {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles size={24}/>}
+                  {isGenerating ? 'Generatsiya...' : 'O\'quv rejasini tuzish'}
+                </button>
+                {courseForm.content && (
+                  <div className="mt-8 space-y-4 animate-slideUp">
+                    <h3 className="font-bold border-b pb-2">AI Natija:</h3>
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed p-6 bg-slate-50 rounded-2xl border">{courseForm.content}</div>
+                    <button onClick={() => { setEditingCourse(null); setShowCourseModal(true); }} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Ushbu reja bilan kurs qo'shish</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.COURSE_MGMT && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-black">Kurslar</h2>
+                <button onClick={() => { setEditingCourse(null); setCourseForm({category:'Dasturlash', duration:'3 oy'}); setShowCourseModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                {props.courses.map(c => (
+                  <div key={c.id} className="bg-white p-6 rounded-[32px] border flex items-center justify-between hover:border-indigo-600 transition">
+                    <div className="flex items-center gap-4">
+                      <img src={c.image} className="w-16 h-16 rounded-2xl object-cover" />
+                      <div><h4 className="font-black">{c.title}</h4><p className="text-[10px] font-black text-indigo-600 uppercase">{c.category}</p></div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingCourse(c); setCourseForm(c); setShowCourseModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
+                      <button onClick={() => props.onDeleteCourse(c.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18}/></button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -263,115 +226,150 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <div className="space-y-6 animate-fadeIn">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-black">Yangiliklar</h2>
-                <button onClick={openAddNewsModal} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-                  <Plus size={20}/> Yangilik qo'shish
-                </button>
+                <button onClick={() => { setEditingNews(null); setNewsForm({date: new Date().toLocaleDateString('uz-UZ')}); setShowNewsModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Yangilik qo'shish</button>
               </div>
-              <div className="grid grid-cols-1 gap-4">
-                {news.map(item => (
-                  <div key={item.id} className="bg-white p-6 rounded-3xl flex justify-between items-center shadow-sm border border-slate-200 hover:border-indigo-200 transition-colors">
-                    <div className="flex gap-4 items-center">
-                      <div className="w-20 h-16 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-                        <img src={item.image || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900 line-clamp-1">{item.title}</h4>
-                        <p className="text-xs font-black text-indigo-600 uppercase">{item.date}</p>
-                      </div>
-                    </div>
+              <div className="grid gap-4">
+                {props.news.map(n => (
+                  <div key={n.id} className="bg-white p-4 rounded-3xl border flex items-center justify-between">
+                    <div className="flex items-center gap-4"><img src={n.image} className="w-20 h-16 rounded-xl object-cover"/><h4 className="font-bold">{n.title}</h4></div>
                     <div className="flex gap-2">
-                      <button onClick={() => openEditNewsModal(item)} className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition"><Edit3 size={20}/></button>
-                      <button onClick={() => onDeleteNews(item.id)} className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition"><Trash2 size={20}/></button>
+                      <button onClick={() => { setEditingNews(n); setNewsForm(n); setShowNewsModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
+                      <button onClick={() => props.onDeleteNews(n.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18}/></button>
                     </div>
                   </div>
                 ))}
-                {news.length === 0 && <div className="p-12 text-center text-slate-400 font-medium bg-white rounded-3xl border border-dashed">Hali yangiliklar yo'q</div>}
               </div>
             </div>
           )}
-          
-          {/* Dashboard and other tabs logic here... */}
-          {activeTab === AdminSubSection.PROFILE_MGMT && (
-            <div className="max-w-2xl animate-fadeIn space-y-8">
-              <h2 className="text-2xl font-black">Profil rasmi</h2>
-              <div className="bg-white p-12 rounded-[40px] border border-slate-200 shadow-sm flex flex-col items-center space-y-8">
-                <div className="relative">
-                  <div className="w-56 h-56 rounded-full overflow-hidden border-8 border-slate-50 shadow-2xl bg-slate-200">
-                    <img src={teacherImage} className="w-full h-full object-cover" alt="Profile" />
+
+          {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-black">Yutuqlar</h2>
+                <button onClick={() => { setEditingAchievement(null); setAchForm({date: '2024'}); setShowAchievementModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
+              </div>
+              <div className="grid gap-4">
+                {props.achievements.map(a => (
+                  <div key={a.id} className="bg-white p-4 rounded-3xl border flex items-center justify-between">
+                    <div className="flex items-center gap-4"><div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><Award/></div><h4 className="font-bold">{a.title} ({a.date})</h4></div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingAchievement(a); setAchForm(a); setShowAchievementModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
+                      <button onClick={() => props.onDeleteAchievement(a.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18}/></button>
+                    </div>
                   </div>
-                  <button onClick={() => profileFileInputRef.current?.click()} className="absolute bottom-2 right-2 p-4 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition transform hover:scale-110"><Camera size={24} /></button>
-                  <input type="file" ref={profileFileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'profile')} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(activeTab === AdminSubSection.MESSAGES || activeTab === AdminSubSection.ENROLLMENTS) && (
+            <div className="space-y-6 animate-fadeIn">
+              <h2 className="text-2xl font-black">{activeTab === AdminSubSection.MESSAGES ? 'Xabarlar' : 'Arizalar'}</h2>
+              <div className="bg-white rounded-[32px] border overflow-hidden shadow-sm">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 border-b">
+                    <tr>
+                      <th className="px-6 py-4 text-xs font-black uppercase text-slate-400">Ism</th>
+                      <th className="px-6 py-4 text-xs font-black uppercase text-slate-400">Ma'lumot</th>
+                      <th className="px-6 py-4 text-right">Amal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(activeTab === AdminSubSection.MESSAGES ? props.messages : props.enrollments).map((item: any) => (
+                      <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50">
+                        <td className="px-6 py-4 font-bold">{item.name || item.studentName}</td>
+                        <td className="px-6 py-4 text-sm text-slate-500">{item.message || item.courseTitle}</td>
+                        <td className="px-6 py-4 text-right"><button onClick={() => activeTab === AdminSubSection.MESSAGES ? props.onDeleteMessage(item.id) : props.onDeleteEnrollment(item.id)} className="text-rose-500 p-2"><Trash2 size={18}/></button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.PROFILE_MGMT && (
+            <div className="max-w-xl animate-fadeIn space-y-8">
+              <h2 className="text-2xl font-black">Profil rasmi</h2>
+              <div className="bg-white p-12 rounded-[40px] border shadow-xl flex flex-col items-center">
+                <div className="relative group">
+                  <img src={props.teacherImage} className="w-64 h-64 rounded-full object-cover border-8 border-white shadow-2xl" />
+                  <button onClick={() => profileFileInputRef.current?.click()} className="absolute bottom-4 right-4 p-5 bg-indigo-600 text-white rounded-full shadow-2xl hover:scale-110 transition"><Camera size={28}/></button>
+                  <input type="file" ref={profileFileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'profile')} />
                 </div>
               </div>
             </div>
           )}
 
-          {activeTab === AdminSubSection.AI_TOOLS && (
-            <div className="max-w-3xl space-y-6 animate-fadeIn">
-              <h2 className="text-2xl font-black flex items-center gap-2 text-amber-500"><Sparkles/> AI Yordamchi</h2>
-              <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm space-y-4">
-                <input 
-                  type="text" 
-                  placeholder="Kurs nomi..." 
-                  value={courseFormData.title} 
-                  onChange={e => setCourseFormData({...courseFormData, title: e.target.value})} 
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" 
-                />
-                <button onClick={handleGenerateOutline} disabled={isGenerating} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex justify-center items-center gap-2">
-                  {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles size={20}/>} {isGenerating ? 'Tuzilmoqda...' : 'Reja tuzish'}
-                </button>
-                {aiError && <p className="text-rose-500 text-sm text-center">{aiError}</p>}
+          {activeTab === AdminSubSection.CONTACT_MGMT && (
+            <div className="max-w-2xl animate-fadeIn space-y-6">
+              <h2 className="text-2xl font-black">Kontaktlar</h2>
+              <div className="bg-white p-8 rounded-[40px] border shadow-xl space-y-4">
+                {Object.keys(contactForm).map((k: any) => (
+                  <div key={k} className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">{k}</label>
+                    <input type="text" value={(contactForm as any)[k]} onChange={e => setContactForm({...contactForm, [k]: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                ))}
+                <button onClick={() => props.onUpdateContactInfo(contactForm)} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2"><Save size={20}/> Saqlash</button>
               </div>
-              {aiResult && aiResult.map((r: any, i: number) => (
-                <div key={i} className="bg-white p-6 rounded-2xl border border-indigo-100"><p className="font-bold">{r.chapter}</p><p className="text-slate-600 text-sm">{r.description}</p></div>
-              ))}
             </div>
           )}
-          
-          {/* Courses, Achievements, Enrollments, Messages tabs... (standard implementations) */}
         </div>
       </main>
 
-      {/* News Modal */}
-      {showNewsModal && (
+      {showCourseModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-          <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh] animate-slideUp">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black text-slate-900">{editingNews ? 'Yangilikni tahrirlash' : 'Yangi yangilik'}</h2>
-              <button onClick={() => setShowNewsModal(false)} className="p-3 bg-slate-50 rounded-full hover:bg-slate-100 transition"><X size={20}/></button>
-            </div>
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase ml-1">Rasm</label>
-                <div className="flex gap-4 items-center p-4 bg-slate-50 rounded-[24px] border border-slate-100">
-                  <div className="w-32 h-20 bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
-                    {newsFormData.image ? <img src={newsFormData.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><ImageIcon size={28}/></div>}
-                  </div>
-                  <div className="flex-1">
-                    <button onClick={() => newsFileInputRef.current?.click()} className="px-6 py-3 bg-white text-indigo-600 border border-indigo-100 rounded-xl text-sm font-black flex items-center gap-2 hover:bg-indigo-50 transition"><Upload size={18}/> Tanlash</button>
-                  </div>
-                  <input type="file" ref={newsFileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'news')} />
-                </div>
+          <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black">{editingCourse ? 'Tahrirlash' : 'Yangi kurs'}</h2><button onClick={() => setShowCourseModal(false)}><X/></button></div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border">
+                <img src={courseForm.image || 'https://via.placeholder.com/150'} className="w-20 h-20 rounded-xl object-cover"/>
+                <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-white border rounded-xl text-sm font-bold">Rasm yuklash</button>
+                <input type="file" ref={fileInputRef} className="hidden" onChange={e => handleImageUpload(e, 'course')}/>
               </div>
-              <input type="text" placeholder="Sarlavha" value={newsFormData.title} onChange={e => setNewsFormData({...newsFormData, title: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none" />
-              <div className="flex gap-2 items-center w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <Video size={20} className="text-slate-400" />
-                <input type="text" placeholder="Video havolasi (YouTube)" value={newsFormData.videoUrl} onChange={e => setNewsFormData({...newsFormData, videoUrl: e.target.value})} className="flex-1 bg-transparent outline-none" />
-              </div>
-              <textarea placeholder="Qisqa tavsif" value={newsFormData.description} onChange={e => setNewsFormData({...newsFormData, description: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl h-24 outline-none focus:ring-2 focus:ring-indigo-500" />
-              <textarea placeholder="Batafsil ma'lumot" value={newsFormData.content} onChange={e => setNewsFormData({...newsFormData, content: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl h-48 outline-none focus:ring-2 focus:ring-indigo-500" />
-              <button onClick={() => {
-                 if (!newsFormData.title) return alert("Sarlavhani kiriting!");
-                 if(editingNews) onUpdateNews({...editingNews, ...newsFormData});
-                 else onAddNews({id: Math.random().toString(36).substr(2,9), ...newsFormData});
-                 setShowNewsModal(false);
-              }} className="w-full bg-indigo-600 text-white py-5 rounded-[24px] font-black shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition">Yangilikni saqlash</button>
+              <input type="text" placeholder="Nomi" value={courseForm.title || ''} onChange={e => setCourseForm({...courseForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
+              <select value={courseForm.category} onChange={e => setCourseForm({...courseForm, category: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold"><option>Dasturlash</option><option>Dizayn</option><option>Marketing</option><option>Aniq fanlar</option></select>
+              <textarea placeholder="Tavsif" value={courseForm.description || ''} onChange={e => setCourseForm({...courseForm, description: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-24 outline-none" />
+              <textarea placeholder="Mundarija" value={courseForm.content || ''} onChange={e => setCourseForm({...courseForm, content: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-40 outline-none" />
+              <button onClick={() => { if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); else props.onAddCourse({id: Math.random().toString(36).substr(2,9), students:0, ...courseForm} as Course); setShowCourseModal(false); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
             </div>
           </div>
         </div>
       )}
-      
-      {/* Course/Achievement modals logic should be here if needed */}
+
+      {showNewsModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black">{editingNews ? 'Yangilikni tahrirlash' : 'Yangi yangilik'}</h2><button onClick={() => setShowNewsModal(false)}><X/></button></div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border">
+                <img src={newsForm.image || 'https://via.placeholder.com/150'} className="w-20 h-20 rounded-xl object-cover"/>
+                <button onClick={() => newsFileInputRef.current?.click()} className="px-4 py-2 bg-white border rounded-xl text-sm font-bold">Rasm yuklash</button>
+                <input type="file" ref={newsFileInputRef} className="hidden" onChange={e => handleImageUpload(e, 'news')}/>
+              </div>
+              <input type="text" placeholder="Sarlavha" value={newsForm.title || ''} onChange={e => setNewsForm({...newsForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
+              <textarea placeholder="Qisqa tavsif" value={newsForm.description || ''} onChange={e => setNewsForm({...newsForm, description: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-24 outline-none" />
+              <textarea placeholder="Matn" value={newsForm.content || ''} onChange={e => setNewsForm({...newsForm, content: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-40 outline-none" />
+              <button onClick={() => { if(editingNews) props.onUpdateNews({...editingNews, ...newsForm} as NewsItem); else props.onAddNews({id: Math.random().toString(36).substr(2,9), ...newsForm} as NewsItem); setShowNewsModal(false); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAchievementModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white rounded-[40px] p-10 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black">Yutuqni saqlash</h2><button onClick={() => setShowAchievementModal(false)}><X/></button></div>
+            <div className="space-y-4">
+              <input type="text" placeholder="Sarlavha" value={achForm.title || ''} onChange={e => setAchForm({...achForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
+              <input type="text" placeholder="Yil" value={achForm.date || ''} onChange={e => setAchForm({...achForm, date: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
+              <textarea placeholder="Tavsif" value={achForm.description || ''} onChange={e => setAchForm({...achForm, description: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-24 outline-none" />
+              <button onClick={() => { if(editingAchievement) props.onUpdateAchievement({...editingAchievement, ...achForm} as Achievement); else props.onAddAchievement({id: Math.random().toString(36).substr(2,9), ...achForm} as Achievement); setShowAchievementModal(false); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

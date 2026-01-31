@@ -28,6 +28,12 @@ export interface NewsItem {
   videoUrl?: string;
 }
 
+/* Added Stat interface to resolve missing export error in constants.tsx */
+export interface Stat {
+  name: string;
+  value: number;
+}
+
 export interface CourseEnrollment {
   id: string;
   courseId: string;
@@ -55,19 +61,13 @@ export interface ContactMessage {
   date: string;
 }
 
-export interface Stat {
-  name: string;
-  value: number;
-}
-
 export enum AppSection {
   HOME = 'home',
   COURSES = 'courses',
   NEWS = 'news',
   ABOUT = 'about',
   CONTACT = 'contact',
-  ADMIN = 'admin',
-  LOGIN = 'login'
+  ADMIN = 'admin'
 }
 
 export enum AdminSubSection {
