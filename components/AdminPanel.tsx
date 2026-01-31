@@ -144,60 +144,82 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-8 h-80">
-                <div className="bg-white p-8 rounded-[40px] border shadow-sm">
-                  <h3 className="font-bold mb-6 text-slate-500">Oylik statistika</h3>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={statsData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                      <YAxis hide />
-                      <Tooltip cursor={{fill: '#f8fafc'}} />
-                      <Bar dataKey="value" fill="#6366f1" radius={[10, 10, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="bg-white p-8 rounded-[40px] border shadow-sm">
-                   <h3 className="font-bold mb-6 text-slate-500">Tarkib taqsimoti</h3>
-                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={statsData} dataKey="value" innerRadius={60} outerRadius={80} paddingAngle={5}>
-                        {statsData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
             </div>
           )}
 
-          {activeTab === AdminSubSection.AI_TOOLS && (
-            <div className="max-w-2xl animate-fadeIn space-y-8">
-              <h2 className="text-2xl font-black flex items-center gap-2 text-amber-500"><Sparkles/> AI Kurs Rejalashtiruvchisi</h2>
-              <div className="bg-white p-10 rounded-[40px] border shadow-xl space-y-6">
-                <input 
-                  type="text" 
-                  placeholder="Kurs nomini kiriting (masalan: Java Backend)" 
-                  value={courseForm.title || ''}
-                  onChange={e => setCourseForm({...courseForm, title: e.target.value})}
-                  className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-lg font-bold"
-                />
-                <button 
-                  onClick={handleAiGeneration}
-                  disabled={isGenerating}
-                  className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl"
-                >
-                  {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles size={24}/>}
-                  {isGenerating ? 'Generatsiya...' : 'O\'quv rejasini tuzish'}
-                </button>
-                {courseForm.content && (
-                  <div className="mt-8 space-y-4 animate-slideUp">
-                    <h3 className="font-bold border-b pb-2">AI Natija:</h3>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed p-6 bg-slate-50 rounded-2xl border">{courseForm.content}</div>
-                    <button onClick={() => { setEditingCourse(null); setShowCourseModal(true); }} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Ushbu reja bilan kurs qo'shish</button>
+          {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
+            <div className="space-y-12 animate-fadeIn">
+              {/* Global Statistics Editing */}
+              <div className="space-y-6">
+                <h2 className="text-2xl font-black flex items-center gap-2"><BarChart3 size={24} className="text-indigo-600"/> Asosiy Statistikalar</h2>
+                <div className="bg-white p-8 rounded-[40px] border shadow-xl grid grid-cols-2 gap-x-8 gap-y-10">
+                  {/* Stat 1 */}
+                  <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 1 Nomi</label>
+                      <input type="text" value={statsForm.stat1Label} onChange={e => setStatsForm({...statsForm, stat1Label: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 1 Qiymati</label>
+                      <input type="text" value={statsForm.stat1Value} onChange={e => setStatsForm({...statsForm, stat1Value: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
                   </div>
-                )}
+                  {/* Stat 2 */}
+                  <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 2 Nomi</label>
+                      <input type="text" value={statsForm.stat2Label} onChange={e => setStatsForm({...statsForm, stat2Label: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 2 Qiymati</label>
+                      <input type="text" value={statsForm.stat2Value} onChange={e => setStatsForm({...statsForm, stat2Value: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  </div>
+                  {/* Stat 3 */}
+                  <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 3 Nomi</label>
+                      <input type="text" value={statsForm.stat3Label} onChange={e => setStatsForm({...statsForm, stat3Label: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 3 Qiymati</label>
+                      <input type="text" value={statsForm.stat3Value} onChange={e => setStatsForm({...statsForm, stat3Value: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  </div>
+                  {/* Stat 4 */}
+                  <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 4 Nomi</label>
+                      <input type="text" value={statsForm.stat4Label} onChange={e => setStatsForm({...statsForm, stat4Label: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Statistika 4 Qiymati</label>
+                      <input type="text" value={statsForm.stat4Value} onChange={e => setStatsForm({...statsForm, stat4Value: e.target.value})} className="w-full p-3 bg-white border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <button onClick={() => props.onUpdateGlobalStats(statsForm)} className="w-full bg-slate-900 text-white py-5 rounded-3xl font-black flex items-center justify-center gap-2 shadow-xl hover:bg-slate-800 transition-all"><Save size={24}/> Statistikani saqlash</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Achievements list */}
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-black">Yutuqlar</h2>
+                  <button onClick={() => { setEditingAchievement(null); setAchForm({date: '2024'}); setShowAchievementModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
+                </div>
+                <div className="grid gap-4">
+                  {props.achievements.map(a => (
+                    <div key={a.id} className="bg-white p-4 rounded-3xl border flex items-center justify-between">
+                      <div className="flex items-center gap-4"><div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><Award/></div><h4 className="font-bold">{a.title} ({a.date})</h4></div>
+                      <div className="flex gap-2">
+                        <button onClick={() => { setEditingAchievement(a); setAchForm(a); setShowAchievementModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
+                        <button onClick={() => props.onDeleteAchievement(a.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18}/></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -206,7 +228,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
             <div className="space-y-6 animate-fadeIn">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-black">Kurslar</h2>
-                <button onClick={() => { setEditingCourse(null); setCourseForm({category:'Dasturlash', duration:'3 oy', students: 0}); setShowCourseModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
+                <button onClick={() => { setEditingCourse(null); setCourseForm({category:'IT', duration:'3 oy', students: 0}); setShowCourseModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 {props.courses.map(c => (
@@ -249,58 +271,9 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
             </div>
           )}
 
-          {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
-            <div className="space-y-12 animate-fadeIn">
-              {/* Global Statistics Editing */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-black flex items-center gap-2"><BarChart3 size={24} className="text-indigo-600"/> Asosiy Statistikalar</h2>
-                <div className="bg-white p-8 rounded-[40px] border shadow-xl grid grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Ish bilan ta'minlash (%)</label>
-                    <input type="text" value={statsForm.jobPlacement} onChange={e => setStatsForm({...statsForm, jobPlacement: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">IT Yo'nalishlar soni</label>
-                    <input type="text" value={statsForm.itDirections} onChange={e => setStatsForm({...statsForm, itDirections: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Mentorlar soni</label>
-                    <input type="text" value={statsForm.mentors} onChange={e => setStatsForm({...statsForm, mentors: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">IELTS 7.0+ natijalar</label>
-                    <input type="text" value={statsForm.ieltsResults} onChange={e => setStatsForm({...statsForm, ieltsResults: e.target.value})} className="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
-                  </div>
-                  <div className="col-span-2">
-                    <button onClick={() => props.onUpdateGlobalStats(statsForm)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2"><Save size={20}/> Statistikani saqlash</button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Achievements list */}
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-black">Yutuqlar</h2>
-                  <button onClick={() => { setEditingAchievement(null); setAchForm({date: '2024'}); setShowAchievementModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"><Plus size={20}/> Qo'shish</button>
-                </div>
-                <div className="grid gap-4">
-                  {props.achievements.map(a => (
-                    <div key={a.id} className="bg-white p-4 rounded-3xl border flex items-center justify-between">
-                      <div className="flex items-center gap-4"><div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><Award/></div><h4 className="font-bold">{a.title} ({a.date})</h4></div>
-                      <div className="flex gap-2">
-                        <button onClick={() => { setEditingAchievement(a); setAchForm(a); setShowAchievementModal(true); }} className="p-2 text-slate-400 hover:text-indigo-600"><Edit3 size={18}/></button>
-                        <button onClick={() => props.onDeleteAchievement(a.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18}/></button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {(activeTab === AdminSubSection.MESSAGES || activeTab === AdminSubSection.ENROLLMENTS) && (
+          {activeTab === AdminSubSection.MESSAGES && (
             <div className="space-y-6 animate-fadeIn">
-              <h2 className="text-2xl font-black">{activeTab === AdminSubSection.MESSAGES ? 'Xabarlar' : 'Arizalar'}</h2>
+              <h2 className="text-2xl font-black">Xabarlar</h2>
               <div className="bg-white rounded-[32px] border overflow-hidden shadow-sm">
                 <table className="w-full text-left">
                   <thead className="bg-slate-50 border-b">
@@ -311,11 +284,37 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(activeTab === AdminSubSection.MESSAGES ? props.messages : props.enrollments).map((item: any) => (
+                    {props.messages.map((item: any) => (
                       <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50">
-                        <td className="px-6 py-4 font-bold">{item.name || item.studentName}</td>
-                        <td className="px-6 py-4 text-sm text-slate-500">{item.message || item.courseTitle}</td>
-                        <td className="px-6 py-4 text-right"><button onClick={() => activeTab === AdminSubSection.MESSAGES ? props.onDeleteMessage(item.id) : props.onDeleteEnrollment(item.id)} className="text-rose-500 p-2"><Trash2 size={18}/></button></td>
+                        <td className="px-6 py-4 font-bold">{item.name}</td>
+                        <td className="px-6 py-4 text-sm text-slate-500">{item.message}</td>
+                        <td className="px-6 py-4 text-right"><button onClick={() => props.onDeleteMessage(item.id)} className="text-rose-500 p-2"><Trash2 size={18}/></button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.ENROLLMENTS && (
+            <div className="space-y-6 animate-fadeIn">
+              <h2 className="text-2xl font-black">Arizalar</h2>
+              <div className="bg-white rounded-[32px] border overflow-hidden shadow-sm">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 border-b">
+                    <tr>
+                      <th className="px-6 py-4 text-xs font-black uppercase text-slate-400">O'quvchi</th>
+                      <th className="px-6 py-4 text-xs font-black uppercase text-slate-400">Kurs</th>
+                      <th className="px-6 py-4 text-right">Amal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {props.enrollments.map((item: any) => (
+                      <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50">
+                        <td className="px-6 py-4 font-bold">{item.studentName}</td>
+                        <td className="px-6 py-4 text-sm text-slate-500">{item.courseTitle}</td>
+                        <td className="px-6 py-4 text-right"><button onClick={() => props.onDeleteEnrollment(item.id)} className="text-rose-500 p-2"><Trash2 size={18}/></button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -354,6 +353,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         </div>
       </main>
 
+      {/* Course Modal */}
       {showCourseModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
           <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -364,10 +364,16 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
                 <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-white border rounded-xl text-sm font-bold">Rasm yuklash</button>
                 <input type="file" ref={fileInputRef} className="hidden" onChange={e => handleImageUpload(e, 'course')}/>
               </div>
-              <input type="text" placeholder="Nomi" value={courseForm.title || ''} onChange={e => setCourseForm({...courseForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
+              <input type="text" placeholder="Kurs Nomi" value={courseForm.title || ''} onChange={e => setCourseForm({...courseForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
               <div className="grid grid-cols-2 gap-4">
-                <select value={courseForm.category} onChange={e => setCourseForm({...courseForm, category: e.target.value})} className="p-4 bg-slate-50 border rounded-2xl outline-none font-bold"><option>Dasturlash</option><option>Dizayn</option><option>Marketing</option><option>Aniq fanlar</option></select>
-                <input type="number" placeholder="O'quvchilar soni" value={courseForm.students || 0} onChange={e => setCourseForm({...courseForm, students: parseInt(e.target.value) || 0})} className="p-4 bg-slate-50 border rounded-2xl outline-none" />
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Kategoriya</label>
+                   <input type="text" placeholder="Kategoriya" value={courseForm.category || ''} onChange={e => setCourseForm({...courseForm, category: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold" />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1">O'quvchilar soni</label>
+                   <input type="number" placeholder="O'quvchilar soni" value={courseForm.students || 0} onChange={e => setCourseForm({...courseForm, students: parseInt(e.target.value) || 0})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
+                </div>
               </div>
               <textarea placeholder="Tavsif" value={courseForm.description || ''} onChange={e => setCourseForm({...courseForm, description: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-24 outline-none" />
               <textarea placeholder="Mundarija" value={courseForm.content || ''} onChange={e => setCourseForm({...courseForm, content: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-40 outline-none" />
@@ -377,25 +383,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         </div>
       )}
 
-      {showNewsModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-          <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex justify-between items-center mb-8"><h2 className="text-2xl font-black">{editingNews ? 'Yangilikni tahrirlash' : 'Yangi yangilik'}</h2><button onClick={() => setShowNewsModal(false)}><X/></button></div>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border">
-                <img src={newsForm.image || 'https://via.placeholder.com/150'} className="w-20 h-20 rounded-xl object-cover"/>
-                <button onClick={() => newsFileInputRef.current?.click()} className="px-4 py-2 bg-white border rounded-xl text-sm font-bold">Rasm yuklash</button>
-                <input type="file" ref={newsFileInputRef} className="hidden" onChange={e => handleImageUpload(e, 'news')}/>
-              </div>
-              <input type="text" placeholder="Sarlavha" value={newsForm.title || ''} onChange={e => setNewsForm({...newsForm, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none" />
-              <textarea placeholder="Qisqa tavsif" value={newsForm.description || ''} onChange={e => setNewsForm({...newsForm, description: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-24 outline-none" />
-              <textarea placeholder="Matn" value={newsForm.content || ''} onChange={e => setNewsForm({...newsForm, content: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl h-40 outline-none" />
-              <button onClick={() => { if(editingNews) props.onUpdateNews({...editingNews, ...newsForm} as NewsItem); else props.onAddNews({id: Math.random().toString(36).substr(2,9), ...newsForm} as NewsItem); setShowNewsModal(false); }} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Achievement Modal */}
       {showAchievementModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
           <div className="bg-white rounded-[40px] p-10 w-full max-md shadow-2xl">

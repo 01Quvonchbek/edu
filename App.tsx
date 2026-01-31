@@ -30,10 +30,14 @@ const App: React.FC = () => {
   const [globalStats, setGlobalStats] = useState<GlobalStats>(() => {
     const s = localStorage.getItem('edu_global_stats');
     return s ? JSON.parse(s) : {
-      jobPlacement: '98%',
-      itDirections: '15+',
-      mentors: '50+',
-      ieltsResults: '200+'
+      stat1Label: 'Ish bilan ta\'minlash',
+      stat1Value: '98%',
+      stat2Label: 'IT Yo\'nalishlar',
+      stat2Value: '15+',
+      stat3Label: 'Mentorlar',
+      stat3Value: '50+',
+      stat4Label: 'IELTS 7.0+',
+      stat4Value: '200+'
     };
   });
   const [contactInfo, setContactInfo] = useState<ContactInfo>(() => {
@@ -194,7 +198,7 @@ const App: React.FC = () => {
               Kelajak <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Texnologiyada</span>
             </h1>
             <p className="text-xl text-slate-500 max-w-lg font-medium leading-relaxed">
-              Yakkabog' tumanidagi eng zamonaviy o'quv markazi. Biz bilan dasturlash, dizayn va xalqaro tillarni professional darajada o'rganing.
+              Yakkabog' tumanidagi eng zamonaviy o'quv markazi. Biz bilan dasturlash, dizayn va aniq fanlarni professional darajada o'rganing.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <button onClick={() => scrollTo('courses')} className="bg-indigo-600 text-white px-10 py-5 rounded-[24px] font-black flex items-center gap-3 shadow-2xl shadow-indigo-200 hover:scale-105 active:scale-95 transition-all">
@@ -236,7 +240,6 @@ const App: React.FC = () => {
             <div className="flex gap-3">
                <button className="px-6 py-3 bg-slate-100 text-slate-900 rounded-2xl font-bold text-sm hover:bg-indigo-600 hover:text-white transition-all">Barchasi</button>
                <button className="px-6 py-3 bg-white border text-slate-500 rounded-2xl font-bold text-sm hover:border-indigo-600 hover:text-indigo-600 transition-all">IT</button>
-               {/* "Tillar" filter button removed as requested */}
             </div>
           </div>
           
@@ -348,22 +351,22 @@ const App: React.FC = () => {
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-6 pt-12">
                   <div className="bg-indigo-600 p-8 rounded-[48px] text-white shadow-2xl shadow-indigo-200">
-                    <h5 className="text-4xl font-black mb-1">{globalStats.jobPlacement}</h5>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Ish bilan ta'minlash</p>
+                    <h5 className="text-4xl font-black mb-1">{globalStats.stat1Value}</h5>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{globalStats.stat1Label}</p>
                   </div>
                   <div className="bg-white p-8 rounded-[48px] border border-slate-100 shadow-xl">
-                    <h5 className="text-4xl font-black text-slate-900 mb-1">{globalStats.itDirections}</h5>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IT Yo'nalishlar</p>
+                    <h5 className="text-4xl font-black text-slate-900 mb-1">{globalStats.stat2Value}</h5>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{globalStats.stat2Label}</p>
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="bg-slate-900 p-8 rounded-[48px] text-white shadow-2xl">
-                    <h5 className="text-4xl font-black mb-1">{globalStats.mentors}</h5>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Mentorlar</p>
+                    <h5 className="text-4xl font-black mb-1">{globalStats.stat3Value}</h5>
+                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{globalStats.stat3Label}</p>
                   </div>
                   <div className="bg-indigo-50 p-8 rounded-[48px] border border-indigo-100">
-                    <h5 className="text-4xl font-black text-indigo-600 mb-1">{globalStats.ieltsResults}</h5>
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">IELTS 7.0+</p>
+                    <h5 className="text-4xl font-black text-indigo-600 mb-1">{globalStats.stat4Value}</h5>
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{globalStats.stat4Label}</p>
                   </div>
                 </div>
               </div>

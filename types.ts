@@ -19,10 +19,14 @@ export interface Achievement {
 }
 
 export interface GlobalStats {
-  jobPlacement: string;
-  itDirections: string;
-  mentors: string;
-  ieltsResults: string;
+  stat1Label: string;
+  stat1Value: string;
+  stat2Label: string;
+  stat2Value: string;
+  stat3Label: string;
+  stat3Value: string;
+  stat4Label: string;
+  stat4Value: string;
 }
 
 export interface NewsItem {
@@ -35,7 +39,6 @@ export interface NewsItem {
   videoUrl?: string;
 }
 
-/* Added Stat interface to resolve missing export error in constants.tsx */
 export interface Stat {
   name: string;
   value: number;
