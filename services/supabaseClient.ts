@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Siz taqdim etgan yangi Supabase loyihasi ma'lumotlari:
