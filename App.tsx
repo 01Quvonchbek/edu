@@ -77,7 +77,7 @@ const App: React.FC = () => {
         if (ti?.image_url) setTeacherImage(ti.image_url);
 
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Data fetching error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -170,11 +170,11 @@ const App: React.FC = () => {
           </div>
           <div className="hidden md:flex gap-8 items-center">
             <div className="flex gap-8 font-bold text-sm text-slate-500">
-              <button onClick={() => scrollTo('home')} className="hover:text-indigo-600">{t.navHome}</button>
-              <button onClick={() => scrollTo('courses')} className="hover:text-indigo-600">{t.navCourses}</button>
-              <button onClick={() => scrollTo('news')} className="hover:text-indigo-600">{t.navNews}</button>
-              <button onClick={() => scrollTo('achievements')} className="hover:text-indigo-600">{t.navAchievements}</button>
-              <button onClick={() => scrollTo('contact')} className="hover:text-indigo-600">{t.navContact}</button>
+              <button onClick={() => scrollTo('home')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.HOME ? 'text-indigo-600' : ''}`}>{t.navHome}</button>
+              <button onClick={() => scrollTo('courses')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.COURSES ? 'text-indigo-600' : ''}`}>{t.navCourses}</button>
+              <button onClick={() => scrollTo('news')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.NEWS ? 'text-indigo-600' : ''}`}>{t.navNews}</button>
+              <button onClick={() => scrollTo('achievements')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.ABOUT ? 'text-indigo-600' : ''}`}>{t.navAchievements}</button>
+              <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition-colors ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
             </div>
             <div className="flex items-center bg-slate-100 rounded-2xl p-1.5 gap-1 border border-slate-200">
                {(['uz', 'ru', 'en'] as Language[]).map(l => (
@@ -210,7 +210,33 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Achievements Section */}
+      {/* Courses */}
+      <section id="courses" className="py-32 bg-white px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-20">
+            <span className="text-indigo-600 font-black uppercase text-xs tracking-widest block">{t.coursesSub}</span>
+            <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.coursesTitle}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {courses.map(c => (
+              <div key={c.id} onClick={() => setSelectedItem({type:'course', data:c})} className="group bg-slate-50 rounded-[60px] p-5 border border-slate-100 cursor-pointer hover:shadow-3xl hover:bg-white hover:-translate-y-4 transition-all duration-500">
+                <div className="h-72 w-full rounded-[48px] overflow-hidden mb-8 relative shadow-inner">
+                  <img src={c.image} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title[lang]}/>
+                  <div className="absolute top-4 left-4">
+                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category[lang]}</span>
+                  </div>
+                </div>
+                <div className="px-4 pb-6 space-y-4">
+                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title[lang]}</h3>
+                  <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description[lang]}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Achievements */}
       <section id="achievements" className="py-32 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
@@ -232,7 +258,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* News Section */}
+      {/* News */}
       <section id="news" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
@@ -260,7 +286,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* Contact */}
       <section id="contact" className="py-32 px-6 bg-slate-900 relative">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-24 items-center relative z-10">
           <div className="text-white space-y-12">
@@ -279,7 +305,6 @@ const App: React.FC = () => {
                 <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
               </div>
             </div>
-            {/* Social Icons TikToklandi */}
             <div className="flex gap-4 pt-6">
                {socialLinks.map(({Icon, link, color}, i) => (
                  <a key={i} href={link} target="_blank" rel="noreferrer" className={`w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center transition-all text-white/60 hover:text-white ${color} hover:scale-110`}><Icon size={24}/></a>
@@ -300,7 +325,21 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Detailed Modal Tiklandi */}
+      {/* Footer */}
+      <footer className="py-12 border-t border-slate-200 bg-white px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><Code2 size={24}/></div>
+            <span className="font-black text-lg text-slate-900">IT YAKKABOG' Academy</span>
+          </div>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{t.footerCopyright}</p>
+          <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline flex items-center gap-2">
+            {t.footerUp} <ChevronRight size={14} className="-rotate-90" />
+          </button>
+        </div>
+      </footer>
+
+      {/* Detailed Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6 animate-fadeIn" onClick={() => setSelectedItem(null)}>
           <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-3xl" onClick={e => e.stopPropagation()}>
@@ -310,7 +349,7 @@ const App: React.FC = () => {
             <div className="flex-1 p-14 overflow-y-auto space-y-10">
               <div className="space-y-6">
                 <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100">
-                  {selectedItem.data.category ? selectedItem.data.category[lang] : "Yangilik"}
+                  {selectedItem.data.category ? selectedItem.data.category[lang] : (lang === 'uz' ? 'Yangilik' : 'News')}
                 </span>
                 <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title[lang]}</h2>
               </div>
