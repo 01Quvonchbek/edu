@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, Mail, Code2, Newspaper, Calendar, Sparkles, Trophy, MapPin, Phone, Loader2, X,
-  Globe, Instagram, Youtube, Facebook, Send, ChevronRight, Menu
+  Globe, Instagram, Youtube, Facebook, Send, ChevronRight, Menu, Award
 } from 'lucide-react';
 import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem, GlobalStats, Language } from './types';
 import { translations } from './translations';
@@ -45,7 +45,6 @@ const App: React.FC = () => {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [enrollments, setEnrollments] = useState<CourseEnrollment[]>([]);
   const [selectedItem, setSelectedItem] = useState<{ type: string, data: any } | null>(null);
-  const [showEnrollForm, setShowEnrollForm] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,6 +167,7 @@ const App: React.FC = () => {
               <button onClick={() => scrollTo('home')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.HOME ? 'text-indigo-600' : ''}`}>{t.navHome}</button>
               <button onClick={() => scrollTo('courses')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.COURSES ? 'text-indigo-600' : ''}`}>{t.navCourses}</button>
               <button onClick={() => scrollTo('news')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.NEWS ? 'text-indigo-600' : ''}`}>{t.navNews}</button>
+              <button onClick={() => scrollTo('achievements')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.ABOUT ? 'text-indigo-600' : ''}`}>{t.navAchievements}</button>
               <button onClick={() => scrollTo('contact')} className={`hover:text-indigo-600 transition ${activeSection === AppSection.CONTACT ? 'text-indigo-600' : ''}`}>{t.navContact}</button>
             </div>
             
@@ -279,6 +279,32 @@ const App: React.FC = () => {
               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">{s.label}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Achievements Section */}
+      <section id="achievements" className="py-32 bg-white px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-center text-center space-y-4 mb-20">
+            <span className="text-indigo-600 font-black uppercase text-xs tracking-widest block">{t.achievementsSub}</span>
+            <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.achievementsTitle}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {achievements.map((ach) => (
+              <div key={ach.id} className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 space-y-6 hover:shadow-2xl transition-all group">
+                <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <Award size={32} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest">{ach.date}</span>
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 leading-tight">{ach.title[lang]}</h3>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed">{ach.description[lang]}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -396,7 +422,7 @@ const App: React.FC = () => {
 
               {selectedItem.type === 'course' && (
                 <div className="pt-6 border-t border-slate-100">
-                  <button onClick={() => { setShowEnrollForm(true); setSelectedItem(null); setTimeout(() => scrollTo('contact'), 100); }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">
+                  <button onClick={() => { scrollTo('contact'); setSelectedItem(null); }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">
                     {t.navEnroll}
                   </button>
                 </div>

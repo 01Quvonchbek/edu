@@ -47,6 +47,10 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
   const [newsForm, setNewsForm] = useState<Partial<NewsItem>>({});
 
+  const [showAchModal, setShowAchModal] = useState(false);
+  const [editingAch, setEditingAch] = useState<Achievement | null>(null);
+  const [achForm, setAchForm] = useState<Partial<Achievement>>({});
+
   const [contactForm, setContactForm] = useState<ContactInfo>(props.contactInfo);
   const [statsForm, setStatsForm] = useState<GlobalStats>(props.globalStats);
 
@@ -149,7 +153,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
           <SidebarBtn id={AdminSubSection.DASHBOARD} icon={LayoutDashboard} label="Boshqaruv paneli" />
           <SidebarBtn id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslar" count={props.courses.length} />
           <SidebarBtn id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" count={props.news.length} />
-          <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Statistika" />
+          <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar & Stats" />
           <SidebarBtn id={AdminSubSection.AI_TOOLS} icon={Sparkles} label="AI Generator" />
           <SidebarBtn id={AdminSubSection.ENROLLMENTS} icon={UserCheck} label="Kursga arizalar" count={props.enrollments.length} />
           <SidebarBtn id={AdminSubSection.MESSAGES} icon={MessageSquare} label="Xabarlar" count={props.messages.length} />
@@ -197,8 +201,34 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
           {/* Achievement / Stats Management Tab */}
           {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
             <div className="space-y-12 animate-fadeIn">
-              <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><BarChart3 size={28} className="text-indigo-600"/> Statistikani Tahrirlash</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><BarChart3 size={28} className="text-indigo-600"/> Statistikani Tahrirlash</h2>
+                <button onClick={() => { setEditingAch(null); setAchForm({ title: emptyLocalized(), description: emptyLocalized(), date: '2024' }); setShowAchModal(true); }} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">
+                  <Plus size={20}/> Yangi Yutuq
+                </button>
+              </div>
+
+              {/* Achievements List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {props.achievements.map(ach => (
+                  <div key={ach.id} className="bg-white p-6 rounded-[40px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black shrink-0"><Award size={32}/></div>
+                      <div>
+                        <h4 className="font-black text-xl text-slate-900">{ach.title.uz}</h4>
+                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{ach.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingAch(ach); setAchForm(ach); setShowAchModal(true); }} className="p-4 bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><Edit3 size={18}/></button>
+                      <button onClick={() => { if(confirm('O\'chirmoqchimisiz?')) props.onDeleteAchievement(ach.id); }} className="p-4 bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={18}/></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="bg-white p-12 rounded-[56px] border border-slate-100 shadow-xl space-y-10">
+                <h3 className="text-2xl font-black text-slate-900">Asosiy ko'rsatkichlar (Stats)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {[1, 2, 3, 4].map(num => {
                     const labelKey = `stat${num}Label` as keyof GlobalStats;
@@ -423,7 +453,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
         </div>
       </main>
 
-      {/* Shared Modals for Course/News */}
+      {/* Shared Modals for Course */}
       {showCourseModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-xl">
           <div className="bg-white rounded-[60px] p-12 w-full max-w-5xl shadow-3xl overflow-y-auto max-h-[90vh] space-y-10 animate-slideUp">
@@ -460,6 +490,33 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
               if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); 
               else props.onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseForm} as Course); 
               setShowCourseModal(false); 
+            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">Saqlash</button>
+          </div>
+        </div>
+      )}
+
+      {/* Achievement Modal */}
+      {showAchModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-xl">
+          <div className="bg-white rounded-[60px] p-12 w-full max-w-3xl shadow-3xl overflow-y-auto max-h-[90vh] space-y-10 animate-slideUp">
+            <div className="flex justify-between items-center">
+              <h2 className="text-4xl font-black text-slate-900">{editingAch ? 'Yutuqni Tahrirlash' : 'Yangi Yutuq'}</h2>
+              <button onClick={() => setShowAchModal(false)} className="p-4 bg-slate-50 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all"><X size={24}/></button>
+            </div>
+            
+            <div className="space-y-8">
+              <LocalizedInput label="Yutuq Sarlavhasi" value={achForm.title as LocalizedText} onChange={val => setAchForm({...achForm, title: val})} />
+              <div className="space-y-2 ml-2">
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sana (Yil)</p>
+                <input type="text" value={achForm.date || ''} onChange={e => setAchForm({...achForm, date: e.target.value})} className="w-full p-4 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="Masalan: 2024" />
+              </div>
+              <LocalizedInput label="Tavsif" value={achForm.description as LocalizedText} onChange={val => setAchForm({...achForm, description: val})} isTextArea />
+            </div>
+
+            <button onClick={() => { 
+              if(editingAch) props.onUpdateAchievement({...editingAch, ...achForm} as Achievement); 
+              else props.onAddAchievement({id: Math.random().toString(36).substr(2,9), ...achForm} as Achievement); 
+              setShowAchModal(false); 
             }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 transition-all">Saqlash</button>
           </div>
         </div>
