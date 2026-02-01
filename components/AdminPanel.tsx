@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { 
   LayoutDashboard, BookOpen, Plus, Trash2, Edit3, ArrowLeft, Award, Save, X, 
-  User as UserIcon, Phone, MessageSquare, UserCheck, Code2, Newspaper, Globe, Camera, BarChart
+  User as UserIcon, Phone, MessageSquare, UserCheck, Code2, Newspaper, Globe, Camera, BarChart, Calendar, Mail
 } from 'lucide-react';
 import { AdminSubSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem, GlobalStats, LocalizedText } from '../types';
 
@@ -37,6 +37,7 @@ const emptyLocalized = (): LocalizedText => ({ uz: '', ru: '', en: '' });
 const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   const [activeTab, setActiveTab] = useState<AdminSubSection>(AdminSubSection.DASHBOARD);
   
+  // Modals state
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [courseForm, setCourseForm] = useState<Partial<Course>>({});
@@ -44,6 +45,10 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
   const [showNewsModal, setShowNewsModal] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
   const [newsForm, setNewsForm] = useState<Partial<NewsItem>>({});
+
+  const [showAchModal, setShowAchModal] = useState(false);
+  const [editingAch, setEditingAch] = useState<Achievement | null>(null);
+  const [achForm, setAchForm] = useState<Partial<Achievement>>({});
 
   const [contactForm, setContactForm] = useState<ContactInfo>(props.contactInfo);
   const [statsForm, setStatsForm] = useState<GlobalStats>(props.globalStats);
@@ -99,7 +104,7 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
           <SidebarBtn id={AdminSubSection.DASHBOARD} icon={LayoutDashboard} label="Boshqaruv" />
           <SidebarBtn id={AdminSubSection.COURSE_MGMT} icon={BookOpen} label="Kurslar" count={props.courses.length} />
           <SidebarBtn id={AdminSubSection.NEWS_MGMT} icon={Newspaper} label="Yangiliklar" count={props.news.length} />
-          <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar" />
+          <SidebarBtn id={AdminSubSection.ACHIEVEMENT_MGMT} icon={Award} label="Yutuqlar" count={props.achievements.length} />
           <SidebarBtn id={AdminSubSection.ENROLLMENTS} icon={UserCheck} label="Arizalar" count={props.enrollments.length} />
           <SidebarBtn id={AdminSubSection.MESSAGES} icon={MessageSquare} label="Xabarlar" count={props.messages.length} />
           <SidebarBtn id={AdminSubSection.CONTACT_MGMT} icon={Phone} label="Kontaktlar" />
@@ -160,26 +165,66 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
 
           {activeTab === AdminSubSection.NEWS_MGMT && (
             <div className="animate-fadeIn space-y-8">
-              <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-black">Yangiliklar boshqaruvi</h2>
-                <button onClick={() => { setEditingNews(null); setNewsForm({ title: emptyLocalized(), description: emptyLocalized(), content: emptyLocalized(), image: '', date: new Date().toLocaleDateString('uz-UZ') }); setShowNewsModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all"><Plus size={18}/> Yangi Yangilik</button>
-              </div>
+              <div className="flex justify-between items-center"><h2 className="text-3xl font-black">Yangiliklar boshqaruvi</h2><button onClick={() => { setEditingNews(null); setNewsForm({ title: emptyLocalized(), description: emptyLocalized(), content: emptyLocalized(), image: '', date: new Date().toLocaleDateString('uz-UZ') }); setShowNewsModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all"><Plus size={18}/> Yangi Yangilik</button></div>
               <div className="grid grid-cols-2 gap-6">
                 {props.news.map(n => (
                   <div key={n.id} className="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-4">
-                      <img src={n.image || 'https://via.placeholder.com/64'} className="w-16 h-16 rounded-xl object-cover" />
-                      <div>
-                        <h4 className="font-bold line-clamp-1">{n.title?.uz || 'Nomsiz yangilik'}</h4>
-                        <p className="text-[10px] font-bold text-slate-400">{n.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => { setEditingNews(n); setNewsForm(n); setShowNewsModal(true); }} className="p-3 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-xl transition-colors"><Edit3 size={16}/></button>
-                      <button onClick={() => { if(confirm('O\'chirilsinmi?')) props.onDeleteNews(n.id); }} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors"><Trash2 size={16}/></button>
-                    </div>
+                    <div className="flex items-center gap-4"><img src={n.image || 'https://via.placeholder.com/64'} className="w-16 h-16 rounded-xl object-cover" /><div><h4 className="font-bold line-clamp-1">{n.title?.uz}</h4><p className="text-[10px] text-slate-400">{n.date}</p></div></div>
+                    <div className="flex gap-2"><button onClick={() => { setEditingNews(n); setNewsForm(n); setShowNewsModal(true); }} className="p-3 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-xl transition-colors"><Edit3 size={16}/></button><button onClick={() => { if(confirm('O\'chirilsinmi?')) props.onDeleteNews(n.id); }} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors"><Trash2 size={16}/></button></div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
+            <div className="animate-fadeIn space-y-8">
+              <div className="flex justify-between items-center"><h2 className="text-3xl font-black">Yutuqlar boshqaruvi</h2><button onClick={() => { setEditingAch(null); setAchForm({ title: emptyLocalized(), description: emptyLocalized(), date: new Date().getFullYear().toString() }); setShowAchModal(true); }} className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all"><Plus size={18}/> Yangi Yutuq</button></div>
+              <div className="grid grid-cols-2 gap-6">
+                {props.achievements.map(a => (
+                  <div key={a.id} className="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-4"><div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center"><Award size={24}/></div><div><h4 className="font-bold">{a.title?.uz}</h4><p className="text-[10px] text-slate-400">{a.date}</p></div></div>
+                    <div className="flex gap-2"><button onClick={() => { setEditingAch(a); setAchForm(a); setShowAchModal(true); }} className="p-3 bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-xl transition-colors"><Edit3 size={16}/></button><button onClick={() => { if(confirm('O\'chirilsinmi?')) props.onDeleteAchievement(a.id); }} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors"><Trash2 size={16}/></button></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.MESSAGES && (
+            <div className="animate-fadeIn space-y-8">
+              <h2 className="text-3xl font-black">Kelgan xabarlar</h2>
+              <div className="space-y-4">
+                {props.messages.length > 0 ? props.messages.map(m => (
+                  <div key={m.id} className="bg-white p-8 rounded-[40px] border border-slate-100 flex justify-between items-start shadow-sm">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">{m.name[0]}</div><div><p className="font-black text-slate-900">{m.name}</p><p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{m.email} • {m.date}</p></div></div>
+                      <p className="text-slate-600 bg-slate-50 p-6 rounded-3xl border border-slate-100 italic leading-relaxed">"{m.message}"</p>
+                    </div>
+                    <button onClick={() => props.onDeleteMessage(m.id)} className="p-4 text-rose-400 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={20}/></button>
+                  </div>
+                )) : <div className="text-center py-20 text-slate-400 font-bold">Xabarlar yo'q</div>}
+              </div>
+            </div>
+          )}
+
+          {activeTab === AdminSubSection.ENROLLMENTS && (
+            <div className="animate-fadeIn space-y-8">
+              <h2 className="text-3xl font-black">Kursga arizalar</h2>
+              <div className="space-y-4">
+                {props.enrollments.length > 0 ? props.enrollments.map(e => (
+                  <div key={e.id} className="bg-white p-6 rounded-[32px] border border-slate-100 flex justify-between items-center shadow-sm">
+                    <div className="flex items-center gap-6">
+                      <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner"><UserCheck size={28}/></div>
+                      <div>
+                        <p className="font-black text-lg text-slate-900">{e.studentName}</p>
+                        <p className="text-sm font-bold text-indigo-600 uppercase tracking-widest">{e.studentPhone}</p>
+                        <p className="text-xs text-slate-400 font-medium">Kurs: <span className="text-slate-900">{e.courseTitle}</span> • {e.date}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => props.onDeleteEnrollment(e.id)} className="p-4 text-rose-400 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 size={20}/></button>
+                  </div>
+                )) : <div className="text-center py-20 text-slate-400 font-bold">Arizalar yo'q</div>}
               </div>
             </div>
           )}
@@ -220,85 +265,72 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
             </div>
           )}
 
-          {(activeTab === AdminSubSection.MESSAGES || activeTab === AdminSubSection.ENROLLMENTS) && (
-            <div className="animate-fadeIn space-y-8">
-              <h2 className="text-3xl font-black">{activeTab === AdminSubSection.MESSAGES ? 'Xabarlar' : 'Arizalar'}</h2>
-              <div className="bg-white rounded-[40px] border border-slate-100 overflow-hidden shadow-sm">
-                {(activeTab === AdminSubSection.MESSAGES ? props.messages : props.enrollments).map((m: any) => (
-                  <div key={m.id} className="p-8 border-b border-slate-100 flex justify-between items-start hover:bg-slate-50/50 transition-colors">
-                    <div>
-                      <p className="font-black text-lg text-slate-900">{m.name || m.studentName}</p>
-                      <p className="text-sm text-slate-500 font-bold">{m.email || m.studentPhone} • {m.date}</p>
-                      {m.message && <p className="mt-4 text-slate-600 bg-white p-4 rounded-2xl border border-slate-100 italic">"{m.message}"</p>}
-                    </div>
-                    <button onClick={() => { if(confirm('O\'chirmoqchimisiz?')) activeTab === AdminSubSection.MESSAGES ? props.onDeleteMessage(m.id) : props.onDeleteEnrollment(m.id) }} className="p-3 text-rose-400 hover:bg-rose-50 rounded-xl transition-all"><Trash2 size={18}/></button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
         </div>
       </main>
 
-      {/* Course Editor Modal */}
+      {/* Course Modal */}
       {showCourseModal && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
-          <div className="bg-white rounded-[48px] p-12 w-full max-w-5xl max-h-[90vh] overflow-y-auto space-y-10 shadow-3xl">
-            <div className="flex justify-between items-center border-b pb-6"><h2 className="text-3xl font-black">{editingCourse ? 'Kursni tahrirlash' : 'Yangi kurs qo\'shish'}</h2><button onClick={() => setShowCourseModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X/></button></div>
-            <div className="grid md:grid-cols-2 gap-10">
-              <div className="space-y-6">
-                <div className="p-8 bg-slate-50 rounded-[40px] flex flex-col items-center gap-4 border border-slate-100 shadow-inner">
-                  {courseForm.image ? <img src={courseForm.image} className="w-full aspect-video rounded-3xl object-cover shadow-lg" /> : <div className="w-full aspect-video rounded-3xl bg-slate-200 flex items-center justify-center font-bold text-slate-400">Rasm tanlanmagan</div>}
-                  <button onClick={() => fileInputRef.current?.click()} className="text-indigo-600 font-black hover:underline transition-all">Rasm yuklash</button>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'course')} />
+        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6">
+          <div className="bg-white rounded-[48px] p-12 w-full max-w-5xl max-h-[90vh] overflow-y-auto space-y-8">
+            <h2 className="text-3xl font-black">{editingCourse ? 'Kursni tahrirlash' : 'Yangi kurs'}</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="p-6 bg-slate-50 rounded-3xl flex flex-col items-center gap-3">
+                   {courseForm.image && <img src={courseForm.image} className="w-full aspect-video rounded-2xl object-cover" />}
+                   <button onClick={() => fileInputRef.current?.click()} className="text-indigo-600 font-bold">Rasm yuklash</button>
+                   <input type="file" ref={fileInputRef} className="hidden" onChange={e => handleImageUpload(e, 'course')} />
                 </div>
-                <LocalizedInput label="Kurs sarlavhasi" value={courseForm.title as LocalizedText} onChange={val => setCourseForm({...courseForm, title: val})} />
-                <LocalizedInput label="Kategoriya" value={courseForm.category as LocalizedText} onChange={val => setCourseForm({...courseForm, category: val})} />
+                <LocalizedInput label="Sarlavha" value={courseForm.title as LocalizedText} onChange={v => setCourseForm({...courseForm, title: v})} />
               </div>
-              <div className="space-y-6">
-                <LocalizedInput label="Davomiyligi" value={courseForm.duration as LocalizedText} onChange={val => setCourseForm({...courseForm, duration: val})} />
-                <LocalizedInput label="Qisqa tavsif" value={courseForm.description as LocalizedText} onChange={val => setCourseForm({...courseForm, description: val})} isTextArea />
-                <LocalizedInput label="Batafsil ma'lumot (Content)" value={courseForm.content as LocalizedText} onChange={val => setCourseForm({...courseForm, content: val})} isTextArea />
+              <div className="space-y-4">
+                <LocalizedInput label="Kategoriya" value={courseForm.category as LocalizedText} onChange={v => setCourseForm({...courseForm, category: v})} />
+                <LocalizedInput label="Tavsif" value={courseForm.description as LocalizedText} onChange={v => setCourseForm({...courseForm, description: v})} isTextArea />
               </div>
             </div>
-            <button onClick={() => { 
-              if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); 
-              else props.onAddCourse({id: Math.random().toString(36).substr(2,9), ...courseForm} as Course); 
-              setShowCourseModal(false); 
-            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-xl hover:bg-indigo-700 transition-all">O'zgarishlarni saqlash</button>
+            <div className="flex gap-4">
+              <button onClick={() => setShowCourseModal(false)} className="flex-1 bg-slate-100 py-4 rounded-2xl font-bold">Bekor qilish</button>
+              <button onClick={() => { if(editingCourse) props.onUpdateCourse({...editingCourse, ...courseForm} as Course); else props.onAddCourse({...courseForm, id: Math.random().toString()} as Course); setShowCourseModal(false); }} className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* News Editor Modal */}
+      {/* News Modal */}
       {showNewsModal && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
-          <div className="bg-white rounded-[48px] p-12 w-full max-w-5xl max-h-[90vh] overflow-y-auto space-y-10 shadow-3xl">
-            <div className="flex justify-between items-center border-b pb-6"><h2 className="text-3xl font-black">{editingNews ? 'Yangilikni tahrirlash' : 'Yangi yangilik qo\'shish'}</h2><button onClick={() => setShowNewsModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X/></button></div>
-            <div className="grid md:grid-cols-2 gap-10">
-              <div className="space-y-6">
-                <div className="p-8 bg-slate-50 rounded-[40px] flex flex-col items-center gap-4 border border-slate-100 shadow-inner">
-                  {newsForm.image ? <img src={newsForm.image} className="w-full aspect-video rounded-3xl object-cover shadow-lg" /> : <div className="w-full aspect-video rounded-3xl bg-slate-200 flex items-center justify-center font-bold text-slate-400">Rasm tanlanmagan</div>}
-                  <button onClick={() => newsFileInputRef.current?.click()} className="text-indigo-600 font-black hover:underline transition-all">Rasm yuklash</button>
-                  <input type="file" ref={newsFileInputRef} className="hidden" accept="image/*" onChange={e => handleImageUpload(e, 'news')} />
-                </div>
-                <LocalizedInput label="Yangilik sarlavhasi" value={newsForm.title as LocalizedText} onChange={val => setNewsForm({...newsForm, title: val})} />
-                <div className="p-4 bg-slate-50 rounded-2xl">
-                  <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Sana</p>
-                  <input type="text" value={newsForm.date} onChange={e => setNewsForm({...newsForm, date: e.target.value})} className="w-full p-2 bg-white rounded-lg outline-none border border-slate-200" placeholder="DD.MM.YYYY" />
-                </div>
+        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6">
+          <div className="bg-white rounded-[48px] p-12 w-full max-w-4xl max-h-[90vh] overflow-y-auto space-y-8">
+            <h2 className="text-3xl font-black">{editingNews ? 'Yangilikni tahrirlash' : 'Yangi yangilik'}</h2>
+            <div className="space-y-4">
+              <div className="p-6 bg-slate-50 rounded-3xl flex flex-col items-center gap-3">
+                 {newsForm.image && <img src={newsForm.image} className="w-full aspect-video rounded-2xl object-cover" />}
+                 <button onClick={() => newsFileInputRef.current?.click()} className="text-indigo-600 font-bold">Rasm yuklash</button>
+                 <input type="file" ref={newsFileInputRef} className="hidden" onChange={e => handleImageUpload(e, 'news')} />
               </div>
-              <div className="space-y-6">
-                <LocalizedInput label="Qisqa tavsif" value={newsForm.description as LocalizedText} onChange={val => setNewsForm({...newsForm, description: val})} isTextArea />
-                <LocalizedInput label="To'liq matn (Content)" value={newsForm.content as LocalizedText} onChange={val => setNewsForm({...newsForm, content: val})} isTextArea />
-              </div>
+              <LocalizedInput label="Sarlavha" value={newsForm.title as LocalizedText} onChange={v => setNewsForm({...newsForm, title: v})} />
+              <LocalizedInput label="Tavsif" value={newsForm.description as LocalizedText} onChange={v => setNewsForm({...newsForm, description: v})} isTextArea />
             </div>
-            <button onClick={() => { 
-              if(editingNews) props.onUpdateNews({...editingNews, ...newsForm} as NewsItem); 
-              else props.onAddNews({id: Math.random().toString(36).substr(2,9), ...newsForm} as NewsItem); 
-              setShowNewsModal(false); 
-            }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-xl hover:bg-indigo-700 transition-all">Yangilikni saqlash</button>
+            <div className="flex gap-4">
+              <button onClick={() => setShowNewsModal(false)} className="flex-1 bg-slate-100 py-4 rounded-2xl font-bold">Bekor qilish</button>
+              <button onClick={() => { if(editingNews) props.onUpdateNews({...editingNews, ...newsForm} as NewsItem); else props.onAddNews({...newsForm, id: Math.random().toString(), date: new Date().toLocaleDateString()} as NewsItem); setShowNewsModal(false); }} className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Achievement Modal */}
+      {showAchModal && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-6">
+          <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl space-y-8">
+            <h2 className="text-3xl font-black">{editingAch ? 'Yutuqni tahrirlash' : 'Yangi yutuq'}</h2>
+            <div className="space-y-4">
+              <LocalizedInput label="Yutuq nomi" value={achForm.title as LocalizedText} onChange={v => setAchForm({...achForm, title: v})} />
+              <LocalizedInput label="Tavsif" value={achForm.description as LocalizedText} onChange={v => setAchForm({...achForm, description: v})} isTextArea />
+              <input value={achForm.date} onChange={e => setAchForm({...achForm, date: e.target.value})} placeholder="Yil (masalan: 2024)" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" />
+            </div>
+            <div className="flex gap-4">
+              <button onClick={() => setShowAchModal(false)} className="flex-1 bg-slate-100 py-4 rounded-2xl font-bold">Bekor qilish</button>
+              <button onClick={() => { if(editingAch) props.onUpdateAchievement({...editingAch, ...achForm} as Achievement); else props.onAddAchievement({...achForm, id: Math.random().toString()} as Achievement); setShowAchModal(false); }} className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold">Saqlash</button>
+            </div>
           </div>
         </div>
       )}

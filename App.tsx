@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, Mail, Code2, Newspaper, Calendar, Sparkles, Trophy, MapPin, Phone, Loader2, X,
-  Globe, Instagram, Youtube, Facebook, Send, ChevronRight, Menu, Award
+  Globe, Instagram, Youtube, Facebook, Send, ChevronRight, Menu, Award, UserCheck
 } from 'lucide-react';
 import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem, GlobalStats, Language } from './types';
 import { translations } from './translations';
@@ -123,6 +123,31 @@ const App: React.FC = () => {
     }
   };
 
+  const handleEnroll = async (course: Course) => {
+    const name = prompt(t.contactFormName);
+    const phone = prompt(t.contactFormPhone);
+    if (!name || !phone) return;
+
+    const enrollData = {
+      courseId: course.id,
+      courseTitle: course.title[lang],
+      studentName: name,
+      studentPhone: phone,
+      date: new Date().toLocaleDateString('uz-UZ'),
+    };
+
+    try {
+      const { data, error } = await supabase.from('enrollments').insert([enrollData]).select();
+      if (error) throw error;
+      if (data && data[0]) {
+        setEnrollments([data[0] as CourseEnrollment, ...enrollments]);
+        alert('Arizangiz qabul qilindi!');
+      }
+    } catch (err) {
+      console.error('Enroll Error:', err);
+    }
+  };
+
   if (isLoading) return (
     <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white gap-4">
       <Loader2 className="animate-spin text-indigo-500" size={64} />
@@ -193,7 +218,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
           <div className="space-y-10 animate-slideUp">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-2xl shadow-sm">
-              <span className="animate-pulse">✨</span>
+              <Sparkles size={18} className="text-indigo-600 animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-widest">{t.heroBadge}</span>
             </div>
             <h1 className="text-7xl md:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
@@ -230,7 +255,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Kurslar Bo'limi - QAYTA TIKLANDI */}
+      {/* Courses */}
       <section id="courses" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-20">
@@ -238,29 +263,28 @@ const App: React.FC = () => {
             <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.coursesTitle}</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {courses && courses.length > 0 ? (
-              courses.map(c => (
-                <div key={c.id} onClick={() => setSelectedItem({type:'course', data:c})} className="group bg-slate-50 rounded-[60px] p-5 border border-slate-100 cursor-pointer hover:shadow-3xl hover:bg-white hover:-translate-y-4 transition-all duration-500">
-                  <div className="h-72 w-full rounded-[48px] overflow-hidden mb-8 relative shadow-inner">
-                    <img src={c.image || 'https://via.placeholder.com/400x300'} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title?.[lang]}/>
-                    <div className="absolute top-4 left-4">
-                      <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category?.[lang] || 'Yo\'nalish'}</span>
-                    </div>
-                  </div>
-                  <div className="px-4 pb-6 space-y-4">
-                    <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title?.[lang] || 'Kurs nomi'}</h3>
-                    <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description?.[lang] || 'Tavsif mavjud emas'}</p>
+            {courses.map(c => (
+              <div key={c.id} className="group bg-slate-50 rounded-[60px] p-5 border border-slate-100 hover:shadow-3xl hover:bg-white transition-all duration-500">
+                <div className="h-72 w-full rounded-[48px] overflow-hidden mb-8 relative shadow-inner">
+                  <img src={c.image || 'https://via.placeholder.com/400x300'} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title?.[lang]}/>
+                  <div className="absolute top-4 left-4">
+                    <span className="px-4 py-2 bg-white/90 backdrop-blur-md text-indigo-600 rounded-2xl text-[10px] font-black uppercase shadow-lg border border-white/50">{c.category?.[lang]}</span>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="col-span-full text-center text-slate-400 py-20 font-bold">Kurslar yuklanmoqda...</p>
-            )}
+                <div className="px-4 pb-6 space-y-4">
+                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title?.[lang]}</h3>
+                  <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description?.[lang]}</p>
+                  <button onClick={() => handleEnroll(c)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black group-hover:bg-indigo-600 transition-all flex items-center justify-center gap-2">
+                    {t.navEnroll} <ArrowRight size={18}/>
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Achievements Section */}
+      {/* Achievements */}
       <section id="achievements" className="py-32 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
@@ -282,7 +306,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Yangiliklar Bo'limi - QAYTA TIKLANDI */}
+      {/* News */}
       <section id="news" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
@@ -290,26 +314,22 @@ const App: React.FC = () => {
             <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.newsTitle}</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {news && news.length > 0 ? (
-              news.map(n => (
-                <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-slate-50 rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
-                  <div className="h-64 rounded-[32px] overflow-hidden mb-6 relative">
-                    <img src={n.image || 'https://via.placeholder.com/400x300'} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title?.[lang]} />
-                    <div className="absolute bottom-4 left-4">
-                      <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-slate-900 text-[10px] font-black uppercase shadow-lg">
-                        <Calendar size={14} className="text-indigo-600"/> {n.date}
-                      </div>
+            {news.map(n => (
+              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-slate-50 rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
+                <div className="h-64 rounded-[32px] overflow-hidden mb-6 relative">
+                  <img src={n.image || 'https://via.placeholder.com/400x300'} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title?.[lang]} />
+                  <div className="absolute bottom-4 left-4">
+                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-slate-900 text-[10px] font-black uppercase shadow-lg">
+                      <Calendar size={14} className="text-indigo-600"/> {n.date}
                     </div>
                   </div>
-                  <div className="px-2 pb-2 space-y-3">
-                    <h4 className="font-black text-xl text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">{n.title?.[lang]}</h4>
-                    <p className="text-slate-500 text-sm line-clamp-2 font-medium">{n.description?.[lang]}</p>
-                  </div>
                 </div>
-              ))
-            ) : (
-              <p className="col-span-full text-center text-slate-400 py-20 font-bold">Yangiliklar yuklanmoqda...</p>
-            )}
+                <div className="px-2 pb-2 space-y-3">
+                  <h4 className="font-black text-xl text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">{n.title?.[lang]}</h4>
+                  <p className="text-slate-500 text-sm line-clamp-2 font-medium">{n.description?.[lang]}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -333,11 +353,6 @@ const App: React.FC = () => {
                 <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
               </div>
             </div>
-            <div className="flex gap-4 pt-6">
-               {socialLinks.map(({Icon, link, color}, i) => (
-                 <a key={i} href={link} target="_blank" rel="noreferrer" className={`w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center transition-all text-white/60 hover:text-white ${color} hover:scale-110`}><Icon size={24}/></a>
-               ))}
-            </div>
           </div>
           <div className="bg-white p-12 rounded-[64px] shadow-3xl">
             <h3 className="text-3xl font-black text-slate-900 mb-8">{t.contactFormTitle}</h3>
@@ -354,35 +369,26 @@ const App: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-slate-200 bg-white px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white"><Code2 size={24}/></div>
-            <span className="font-black text-lg text-slate-900">IT YAKKABOG' Academy</span>
-          </div>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{t.footerCopyright}</p>
-          <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline flex items-center gap-2">
-            {t.footerUp} <ChevronRight size={14} className="-rotate-90" />
-          </button>
-        </div>
+      <footer className="py-12 border-t border-slate-200 bg-white px-6 text-center">
+        <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{t.footerCopyright}</p>
       </footer>
 
-      {/* Modal View */}
+      {/* News Detail Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6 animate-fadeIn" onClick={() => setSelectedItem(null)}>
-          <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-3xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6" onClick={() => setSelectedItem(null)}>
+          <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
             <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden">
               <img src={selectedItem.data.image || 'https://via.placeholder.com/800x600'} className="w-full h-full object-cover" alt={selectedItem.data.title?.[lang]}/>
             </div>
             <div className="flex-1 p-14 overflow-y-auto space-y-10">
               <div className="space-y-6">
                 <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100">
-                  {selectedItem.data.category?.[lang] || 'Ma\'lumot'}
+                  Yangilik
                 </span>
-                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title?.[lang] || 'Sarlavha'}</h2>
+                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title?.[lang]}</h2>
               </div>
-              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium shadow-inner whitespace-pre-line">
-                 {selectedItem.data.content?.[lang] || selectedItem.data.description?.[lang] || 'Tavsif mavjud emas.'}
+              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium whitespace-pre-line">
+                 {selectedItem.data.content?.[lang] || selectedItem.data.description?.[lang]}
               </div>
               <button onClick={() => setSelectedItem(null)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">Yopish</button>
             </div>
