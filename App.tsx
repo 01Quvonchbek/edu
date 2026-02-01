@@ -19,12 +19,13 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Enrollment Modal States
+  // Modal States
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [selectedCourseForEnroll, setSelectedCourseForEnroll] = useState<Course | null>(null);
   const [enrollForm, setEnrollForm] = useState({ name: '', phone: '' });
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrollSuccess, setIsEnrollSuccess] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{ type: string, data: any } | null>(null);
 
   const t = translations[lang];
 
@@ -54,7 +55,6 @@ const App: React.FC = () => {
   const [teacherImage, setTeacherImage] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800');
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [enrollments, setEnrollments] = useState<CourseEnrollment[]>([]);
-  const [selectedItem, setSelectedItem] = useState<{ type: string, data: any } | null>(null);
 
   const fetchData = async () => {
     try {
@@ -72,9 +72,9 @@ const App: React.FC = () => {
         supabase.from('teacher_profile').select('image_url').maybeSingle()
       ]);
 
-      if (c) setCourses(c as Course[]); else setCourses(INITIAL_COURSES);
-      if (n) setNews(n as NewsItem[]); else setNews(INITIAL_NEWS);
-      if (a) setAchievements(a as Achievement[]); else setAchievements(INITIAL_ACHIEVEMENTS);
+      setCourses(c && c.length > 0 ? (c as Course[]) : INITIAL_COURSES);
+      setNews(n && n.length > 0 ? (n as NewsItem[]) : INITIAL_NEWS);
+      setAchievements(a && a.length > 0 ? (a as Achievement[]) : INITIAL_ACHIEVEMENTS);
       if (s) setGlobalStats(s as GlobalStats);
       if (ci) setContactInfo(ci as ContactInfo);
       if (m) setMessages(m as ContactMessage[]);
@@ -82,7 +82,10 @@ const App: React.FC = () => {
       if (ti?.image_url) setTeacherImage(ti.image_url);
 
     } catch (error) {
-      console.warn("Dastlabki yuklashda xatolik (jadvallar hali yaratilmagan bo'lishi mumkin):", error);
+      console.warn("Ma'lumotlarni yuklashda xatolik:", error);
+      setCourses(INITIAL_COURSES);
+      setNews(INITIAL_NEWS);
+      setAchievements(INITIAL_ACHIEVEMENTS);
     }
   };
 
@@ -122,8 +125,8 @@ const App: React.FC = () => {
         (e.target as HTMLFormElement).reset();
       }
     } catch (err: any) {
-      console.error('Error sending message:', err);
-      alert('Xatolik: Supabase bazasida "messages" jadvali yaratilmagan bo\'lishi mumkin.');
+      console.error('Error:', err);
+      alert('Xatolik: Xabar yuborilmadi. Supabase bazasida "messages" jadvali borligini tekshiring.');
     }
   };
 
@@ -142,13 +145,7 @@ const App: React.FC = () => {
 
     try {
       const { data, error } = await supabase.from('enrollments').insert([enrollData]).select();
-      
-      if (error) {
-        if (error.code === '42P01') {
-          throw new Error("Supabase'da 'enrollments' jadvali topilmadi. Iltimos, SQL Editor orqali jadvalni yarating.");
-        }
-        throw error;
-      }
+      if (error) throw error;
       
       if (data && data[0]) {
         setEnrollments([data[0] as CourseEnrollment, ...enrollments]);
@@ -160,8 +157,8 @@ const App: React.FC = () => {
         }, 2000);
       }
     } catch (err: any) {
-      console.error('Enrollment Error:', err);
-      alert(`Xatolik: ${err.message}`);
+      console.error('Enroll Error:', err);
+      alert(`Xatolik: ${err.message || "Baza bilan bog'lanishda xato"}`);
     } finally {
       setIsEnrolling(false);
     }
@@ -243,7 +240,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* Hero Section */}
       <section id="home" className="relative pt-48 pb-24 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
           <div className="space-y-10 animate-slideUp">
@@ -267,7 +264,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Stats */}
+      {/* Stats Section */}
       <section className="py-20 bg-white border-y border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
@@ -285,7 +282,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* Courses */}
+      {/* Courses Section */}
       <section id="courses" className="py-32 bg-white px-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-20">
@@ -293,7 +290,7 @@ const App: React.FC = () => {
             <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.coursesTitle}</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {courses.length > 0 ? courses.map(c => (
+            {courses.map(c => (
               <div key={c.id} className="group bg-slate-50 rounded-[60px] p-5 border border-slate-100 hover:shadow-3xl hover:bg-white transition-all duration-500">
                 <div className="h-72 w-full rounded-[48px] overflow-hidden mb-8 relative shadow-inner">
                   <img src={c.image || 'https://via.placeholder.com/400x300'} className="h-full w-full object-cover group-hover:scale-110 transition duration-1000" alt={c.title?.[lang]}/>
@@ -309,16 +306,125 @@ const App: React.FC = () => {
                   </button>
                 </div>
               </div>
-            )) : (
-              <div className="col-span-full py-20 text-center text-slate-400 font-bold">Kurslar topilmadi</div>
-            )}
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Achievements, News, Contact... same as before */}
+      {/* Achievements Section */}
+      <section id="achievements" className="py-32 bg-slate-50 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-20">
+            <span className="text-indigo-600 font-black uppercase text-xs tracking-widest block">{t.achievementsSub}</span>
+            <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.achievementsTitle}</h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {achievements.map((ach) => (
+              <div key={ach.id} className="bg-white p-10 rounded-[48px] border border-slate-100 space-y-6 hover:shadow-2xl transition-all group">
+                <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform"><Award size={32} /></div>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase text-indigo-600 tracking-widest">{ach.date}</span>
+                  <h3 className="text-2xl font-black text-slate-900 leading-tight">{ach.title?.[lang]}</h3>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed">{ach.description?.[lang]}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* ENROLLMENT MODAL */}
+      {/* News Section */}
+      <section id="news" className="py-32 bg-white px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-4 mb-20">
+            <span className="text-indigo-600 font-black uppercase text-xs tracking-widest">{t.newsSub}</span>
+            <h2 className="text-6xl font-black text-slate-900 tracking-tight">{t.newsTitle}</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {news.map(n => (
+              <div key={n.id} onClick={() => setSelectedItem({type:'news', data:n})} className="bg-slate-50 rounded-[40px] p-5 group cursor-pointer border border-transparent hover:border-indigo-100 hover:shadow-2xl transition-all">
+                <div className="h-64 rounded-[32px] overflow-hidden mb-6 relative">
+                  <img src={n.image || 'https://via.placeholder.com/400x300'} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={n.title?.[lang]} />
+                  <div className="absolute bottom-4 left-4">
+                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-slate-900 text-[10px] font-black uppercase shadow-lg">
+                      <Calendar size={14} className="text-indigo-600"/> {n.date}
+                    </div>
+                  </div>
+                </div>
+                <div className="px-2 pb-2 space-y-3">
+                  <h4 className="font-black text-xl text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">{n.title?.[lang]}</h4>
+                  <p className="text-slate-500 text-sm line-clamp-2 font-medium">{n.description?.[lang]}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-32 px-6 bg-slate-900 relative">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-24 items-center relative z-10">
+          <div className="text-white space-y-12">
+            <h2 className="text-7xl font-black tracking-tighter leading-none">{t.contactTitle}</h2>
+            <div className="space-y-8">
+              <div className="flex items-center gap-8">
+                <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-indigo-400"><MapPin size={32}/></div>
+                <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactAddress}</p><p className="text-xl font-bold">{contactInfo.address}</p></div>
+              </div>
+              <div className="flex items-center gap-8">
+                <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-indigo-400"><Mail size={32}/></div>
+                <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactEmail}</p><p className="text-xl font-bold">{contactInfo.email}</p></div>
+              </div>
+              <div className="flex items-center gap-8">
+                <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-indigo-400"><Phone size={32}/></div>
+                <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
+              </div>
+            </div>
+            <div className="flex gap-4 pt-4">
+              {socialLinks.map(({ Icon, link, color }, i) => (
+                <a 
+                  key={i} 
+                  href={link} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className={`w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center transition-all text-white/60 hover:text-white ${color} hover:scale-110 hover:-translate-y-1`}
+                >
+                  <Icon size={24} />
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="bg-white p-12 rounded-[64px] shadow-3xl">
+            <h3 className="text-3xl font-black text-slate-900 mb-8">{t.contactFormTitle}</h3>
+            <form onSubmit={handleSendMessage} className="space-y-5">
+              <div className="grid md:grid-cols-2 gap-5">
+                <input name="name" required placeholder={t.contactFormName} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-4 focus:ring-indigo-100 transition-all" />
+                <input name="email" required placeholder={t.contactFormEmail} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-4 focus:ring-indigo-100 transition-all" />
+              </div>
+              <textarea name="message" required placeholder={t.contactFormMsg} rows={4} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-4 focus:ring-indigo-100 transition-all"></textarea>
+              <button type="submit" className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-lg shadow-2xl hover:bg-indigo-700 transition-all">{t.contactFormSubmit}</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-slate-200 bg-white px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white"><Code2 size={20}/></div>
+             <span className="font-black text-slate-900 tracking-tight">IT YAKKABOG'</span>
+          </div>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{t.footerCopyright}</p>
+          <div className="flex gap-4">
+             {socialLinks.map(({ Icon, link }, i) => (
+               <a key={i} href={link} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-indigo-600 transition-colors"><Icon size={20} /></a>
+             ))}
+          </div>
+        </div>
+      </footer>
+
+      {/* Enrollment Modal */}
       {showEnrollModal && (
         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6">
           <div className="bg-white w-full max-w-xl rounded-[60px] overflow-hidden shadow-2xl relative animate-bounceIn">
@@ -390,6 +496,32 @@ const App: React.FC = () => {
                   </form>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* News Detail Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6" onClick={() => setSelectedItem(null)}>
+          <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-2xl animate-bounceIn" onClick={e => e.stopPropagation()}>
+            <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden">
+              <img src={selectedItem.data.image || 'https://via.placeholder.com/800x600'} className="w-full h-full object-cover" alt={selectedItem.data.title?.[lang]}/>
+            </div>
+            <div className="flex-1 p-14 overflow-y-auto space-y-10">
+              <div className="space-y-6">
+                <div className="flex justify-between items-start">
+                  <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100">
+                    Yangilik • {selectedItem.data.date}
+                  </span>
+                  <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24}/></button>
+                </div>
+                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title?.[lang]}</h2>
+              </div>
+              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium whitespace-pre-line">
+                 {selectedItem.data.content?.[lang] || selectedItem.data.description?.[lang]}
+              </div>
+              <button onClick={() => setSelectedItem(null)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-indigo-600 transition-colors">Yopish</button>
             </div>
           </div>
         </div>
