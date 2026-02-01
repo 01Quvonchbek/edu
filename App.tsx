@@ -353,6 +353,20 @@ const App: React.FC = () => {
                 <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
               </div>
             </div>
+            {/* Ijtimoiy tarmoqlar znachoklari qaytarildi */}
+            <div className="flex gap-4 pt-4">
+              {socialLinks.map(({ Icon, link, color }, i) => (
+                <a 
+                  key={i} 
+                  href={link} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className={`w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center transition-all text-white/60 hover:text-white ${color} hover:scale-110 hover:-translate-y-1`}
+                >
+                  <Icon size={24} />
+                </a>
+              ))}
+            </div>
           </div>
           <div className="bg-white p-12 rounded-[64px] shadow-3xl">
             <h3 className="text-3xl font-black text-slate-900 mb-8">{t.contactFormTitle}</h3>
@@ -369,8 +383,19 @@ const App: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-slate-200 bg-white px-6 text-center">
-        <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{t.footerCopyright}</p>
+      <footer className="py-12 border-t border-slate-200 bg-white px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white"><Code2 size={20}/></div>
+             <span className="font-black text-slate-900 tracking-tight">IT YAKKABOG'</span>
+          </div>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{t.footerCopyright}</p>
+          <div className="flex gap-4">
+             {socialLinks.map(({ Icon, link }, i) => (
+               <a key={i} href={link} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-indigo-600 transition-colors"><Icon size={20} /></a>
+             ))}
+          </div>
+        </div>
       </footer>
 
       {/* News Detail Modal */}
