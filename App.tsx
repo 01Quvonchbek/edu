@@ -58,7 +58,6 @@ const App: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      // Har bir so'rovni alohida try-catch bilan o'raymiz, shunda bitta jadval bo'lmasa ham boshqalari yuklanadi
       const fetchItem = async (table: string, orderCol?: string) => {
         try {
           let query = supabase.from(table).select('*');
@@ -90,7 +89,7 @@ const App: React.FC = () => {
       if (ti?.image_url) setTeacherImage(ti.image_url);
 
     } catch (error) {
-      console.warn("Dastlabki yuklashda kutilmagan xatolik:", error);
+      console.warn("Dastlabki yuklashda xatolik:", error);
       setCourses(INITIAL_COURSES);
       setNews(INITIAL_NEWS);
       setAchievements(INITIAL_ACHIEVEMENTS);
@@ -133,7 +132,7 @@ const App: React.FC = () => {
         (e.target as HTMLFormElement).reset();
       }
     } catch (err: any) {
-      alert('Xatolik: Supabase bazasida "messages" jadvali yaratilmagan bo\'lishi mumkin.');
+      alert('Xatolik: Xabarni yuborishda muammo yuz berdi.');
     }
   };
 
@@ -164,7 +163,7 @@ const App: React.FC = () => {
         }, 2000);
       }
     } catch (err: any) {
-      alert('Xatolik: Arizani saqlashda muammo yuz berdi. Supabase SQL Editor orqali "enrollments" jadvalini yarating.');
+      alert('Xatolik: Arizani saqlashda muammo yuz berdi.');
     } finally {
       setIsEnrolling(false);
     }
@@ -378,6 +377,21 @@ const App: React.FC = () => {
                 <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
               </div>
             </div>
+            
+            {/* Social Icons Re-added */}
+            <div className="flex gap-4 pt-4">
+              {socialLinks.map(({ Icon, link, color }, i) => (
+                <a 
+                  key={i} 
+                  href={link} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className={`w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center transition-all text-white/60 hover:text-white ${color} hover:scale-110 hover:-translate-y-1`}
+                >
+                  <Icon size={24} />
+                </a>
+              ))}
+            </div>
           </div>
           <div className="bg-white p-12 rounded-[64px] shadow-3xl">
             <h3 className="text-3xl font-black text-slate-900 mb-8">{t.contactFormTitle}</h3>
@@ -400,6 +414,15 @@ const App: React.FC = () => {
              <span className="font-black text-slate-900 tracking-tight">IT YAKKABOG'</span>
           </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">{t.footerCopyright}</p>
+          
+          {/* Footer Social Icons Re-added */}
+          <div className="flex gap-4">
+             {socialLinks.map(({ Icon, link }, i) => (
+               <a key={i} href={link} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-indigo-600 transition-colors">
+                 <Icon size={20} />
+               </a>
+             ))}
+          </div>
         </div>
       </footer>
 
