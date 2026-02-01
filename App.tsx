@@ -49,43 +49,39 @@ const App: React.FC = () => {
   const [enrollments, setEnrollments] = useState<CourseEnrollment[]>([]);
   const [selectedItem, setSelectedItem] = useState<{ type: string, data: any } | null>(null);
 
+  const fetchData = async () => {
+    try {
+      const [
+        { data: c }, { data: n }, { data: a }, { data: s }, 
+        { data: ci }, { data: m }, { data: e }, { data: ti }
+      ] = await Promise.all([
+        supabase.from('courses').select('*').order('id', { ascending: false }),
+        supabase.from('news').select('*').order('date', { ascending: false }),
+        supabase.from('achievements').select('*'),
+        supabase.from('global_stats').select('*').maybeSingle(),
+        supabase.from('contact_info').select('*').maybeSingle(),
+        supabase.from('messages').select('*').order('date', { ascending: false }),
+        supabase.from('enrollments').select('*').order('date', { ascending: false }),
+        supabase.from('teacher_profile').select('image_url').maybeSingle()
+      ]);
+
+      if (c && c.length > 0) setCourses(c as Course[]); else setCourses(INITIAL_COURSES);
+      if (n && n.length > 0) setNews(n as NewsItem[]); else setNews(INITIAL_NEWS);
+      if (a && a.length > 0) setAchievements(a as Achievement[]); else setAchievements(INITIAL_ACHIEVEMENTS);
+      if (s) setGlobalStats(s as GlobalStats);
+      if (ci) setContactInfo(ci as ContactInfo);
+      if (m) setMessages(m as ContactMessage[]);
+      if (e) setEnrollments(e as CourseEnrollment[]);
+      if (ti?.image_url) setTeacherImage(ti.image_url);
+
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [
-          { data: c }, { data: n }, { data: a }, { data: s }, 
-          { data: ci }, { data: m }, { data: e }, { data: ti }
-        ] = await Promise.all([
-          supabase.from('courses').select('*').order('id', { ascending: false }),
-          supabase.from('news').select('*').order('date', { ascending: false }),
-          supabase.from('achievements').select('*'),
-          supabase.from('global_stats').select('*').maybeSingle(),
-          supabase.from('contact_info').select('*').maybeSingle(),
-          supabase.from('messages').select('*').order('date', { ascending: false }),
-          supabase.from('enrollments').select('*').order('date', { ascending: false }),
-          supabase.from('teacher_profile').select('image_url').maybeSingle()
-        ]);
-
-        if (c && c.length > 0) setCourses(c as Course[]); else setCourses(INITIAL_COURSES);
-        if (n && n.length > 0) setNews(n as NewsItem[]); else setNews(INITIAL_NEWS);
-        if (a && a.length > 0) setAchievements(a as Achievement[]); else setAchievements(INITIAL_ACHIEVEMENTS);
-        if (s) setGlobalStats(s as GlobalStats);
-        if (ci) setContactInfo(ci as ContactInfo);
-        if (m) setMessages(m as ContactMessage[]);
-        if (e) setEnrollments(e as CourseEnrollment[]);
-        if (ti?.image_url) setTeacherImage(ti.image_url);
-
-      } catch (error) {
-        console.error("Fetch Error:", error);
-        setCourses(INITIAL_COURSES);
-        setNews(INITIAL_NEWS);
-        setAchievements(INITIAL_ACHIEVEMENTS);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
+    setIsLoading(true);
+    fetchData().finally(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -115,17 +111,18 @@ const App: React.FC = () => {
       if (error) throw error;
       if (data && data[0]) {
         setMessages([data[0] as ContactMessage, ...messages]);
-        alert(lang === 'uz' ? 'Xabaringiz yuborildi!' : lang === 'ru' ? 'Ваше сообщение отправлено!' : 'Your message has been sent!');
+        alert('Xabaringiz yuborildi!');
         (e.target as HTMLFormElement).reset();
       }
     } catch (err) {
       console.error('Error sending message:', err);
+      alert('Xatolik yuz berdi. Iltimos qayta urinib ko\'ring.');
     }
   };
 
   const handleEnroll = async (course: Course) => {
-    const name = prompt(t.contactFormName);
-    const phone = prompt(t.contactFormPhone);
+    const name = prompt('Ismingizni kiriting:');
+    const phone = prompt('Telefon raqamingizni kiriting:');
     if (!name || !phone) return;
 
     const enrollData = {
@@ -141,10 +138,11 @@ const App: React.FC = () => {
       if (error) throw error;
       if (data && data[0]) {
         setEnrollments([data[0] as CourseEnrollment, ...enrollments]);
-        alert('Arizangiz qabul qilindi!');
+        alert('Arizangiz muvaffaqiyatli qabul qilindi! Tezz orada aloqaga chiqamiz.');
       }
     } catch (err) {
       console.error('Enroll Error:', err);
+      alert('Arizani yuborishda xatolik yuz berdi.');
     }
   };
 
@@ -353,7 +351,6 @@ const App: React.FC = () => {
                 <div><p className="text-white/40 text-[10px] font-black uppercase mb-1">{t.contactPhone}</p><p className="text-xl font-bold">{contactInfo.phone}</p></div>
               </div>
             </div>
-            {/* Ijtimoiy tarmoqlar znachoklari qaytarildi */}
             <div className="flex gap-4 pt-4">
               {socialLinks.map(({ Icon, link, color }, i) => (
                 <a 
@@ -397,29 +394,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
-
-      {/* News Detail Modal */}
-      {selectedItem && (
-        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6" onClick={() => setSelectedItem(null)}>
-          <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
-            <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden">
-              <img src={selectedItem.data.image || 'https://via.placeholder.com/800x600'} className="w-full h-full object-cover" alt={selectedItem.data.title?.[lang]}/>
-            </div>
-            <div className="flex-1 p-14 overflow-y-auto space-y-10">
-              <div className="space-y-6">
-                <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100">
-                  Yangilik
-                </span>
-                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title?.[lang]}</h2>
-              </div>
-              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium whitespace-pre-line">
-                 {selectedItem.data.content?.[lang] || selectedItem.data.description?.[lang]}
-              </div>
-              <button onClick={() => setSelectedItem(null)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">Yopish</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
