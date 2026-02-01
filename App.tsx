@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, Mail, Code2, Newspaper, Calendar, Sparkles, Trophy, MapPin, Phone, Loader2, X,
-  Globe, Instagram, Youtube, Facebook, Send, ChevronRight, Menu, Award, UserCheck
+  Globe, Instagram, Youtube, Facebook, Send, ChevronRight, Menu, Award, UserCheck, CheckCircle2
 } from 'lucide-react';
 import { AppSection, Course, Achievement, ContactInfo, ContactMessage, CourseEnrollment, NewsItem, GlobalStats, Language } from './types';
 import { translations } from './translations';
@@ -18,6 +18,13 @@ const App: React.FC = () => {
   const [logoClicks, setLogoClicks] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Enrollment Modal States
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
+  const [selectedCourseForEnroll, setSelectedCourseForEnroll] = useState<Course | null>(null);
+  const [enrollForm, setEnrollForm] = useState({ name: '', phone: '' });
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isEnrollSuccess, setIsEnrollSuccess] = useState(false);
 
   const t = translations[lang];
 
@@ -120,16 +127,16 @@ const App: React.FC = () => {
     }
   };
 
-  const handleEnroll = async (course: Course) => {
-    const name = prompt('Ismingizni kiriting:');
-    const phone = prompt('Telefon raqamingizni kiriting:');
-    if (!name || !phone) return;
+  const handleEnrollSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!enrollForm.name || !enrollForm.phone || !selectedCourseForEnroll) return;
 
+    setIsEnrolling(true);
     const enrollData = {
-      courseId: course.id,
-      courseTitle: course.title[lang],
-      studentName: name,
-      studentPhone: phone,
+      courseId: selectedCourseForEnroll.id,
+      courseTitle: selectedCourseForEnroll.title[lang],
+      studentName: enrollForm.name,
+      studentPhone: enrollForm.phone,
       date: new Date().toLocaleDateString('uz-UZ'),
     };
 
@@ -138,12 +145,28 @@ const App: React.FC = () => {
       if (error) throw error;
       if (data && data[0]) {
         setEnrollments([data[0] as CourseEnrollment, ...enrollments]);
-        alert('Arizangiz muvaffaqiyatli qabul qilindi! Tezz orada aloqaga chiqamiz.');
+        setIsEnrollSuccess(true);
+        setTimeout(() => {
+          setShowEnrollModal(false);
+          setIsEnrollSuccess(false);
+          setEnrollForm({ name: '', phone: '' });
+        }, 2000);
       }
     } catch (err) {
       console.error('Enroll Error:', err);
       alert('Arizani yuborishda xatolik yuz berdi.');
+    } finally {
+      setIsEnrolling(false);
     }
+  };
+
+  const openEnrollModal = (course?: Course) => {
+    if (course) {
+      setSelectedCourseForEnroll(course);
+    } else if (courses.length > 0) {
+      setSelectedCourseForEnroll(courses[0]);
+    }
+    setShowEnrollModal(true);
   };
 
   if (isLoading) return (
@@ -206,7 +229,8 @@ const App: React.FC = () => {
                  <button key={l} onClick={() => setLang(l)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${lang === l ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{l}</button>
                ))}
             </div>
-            <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-7 py-3 rounded-2xl font-black ml-4 hover:bg-indigo-600 transition-all">{t.navEnroll}</button>
+            {/* UPDATED: navbar apply button now opens modal */}
+            <button onClick={() => openEnrollModal()} className="bg-slate-900 text-white px-7 py-3 rounded-2xl font-black ml-4 hover:bg-indigo-600 transition-all">{t.navEnroll}</button>
           </div>
         </div>
       </nav>
@@ -272,7 +296,8 @@ const App: React.FC = () => {
                 <div className="px-4 pb-6 space-y-4">
                   <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title?.[lang]}</h3>
                   <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description?.[lang]}</p>
-                  <button onClick={() => handleEnroll(c)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black group-hover:bg-indigo-600 transition-all flex items-center justify-center gap-2">
+                  {/* UPDATED: Enroll button now opens modal */}
+                  <button onClick={() => openEnrollModal(c)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black group-hover:bg-indigo-600 transition-all flex items-center justify-center gap-2">
                     {t.navEnroll} <ArrowRight size={18}/>
                   </button>
                 </div>
@@ -394,6 +419,106 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* ENROLLMENT MODAL */}
+      {showEnrollModal && (
+        <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-xl rounded-[60px] overflow-hidden shadow-2xl relative animate-bounceIn">
+            <button onClick={() => setShowEnrollModal(false)} className="absolute top-8 right-8 text-slate-300 hover:text-slate-900 transition-colors"><X size={32}/></button>
+            
+            <div className="p-16">
+              {isEnrollSuccess ? (
+                <div className="flex flex-col items-center justify-center py-10 space-y-6 text-center">
+                   <div className="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center"><CheckCircle2 size={64}/></div>
+                   <h2 className="text-3xl font-black text-slate-900">Muvaffaqiyatli!</h2>
+                   <p className="text-slate-500 font-medium">Arizangiz qabul qilindi. Tez orada operatorlarimiz bog'lanishadi.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-4 mb-10">
+                    <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner"><UserCheck size={32}/></div>
+                    <h2 className="text-4xl font-black text-slate-900 tracking-tight">{t.enrollTitle}</h2>
+                    <p className="text-slate-500 font-medium">Kerakli ma'lumotlarni to'ldiring va biz siz bilan bog'lanamiz.</p>
+                  </div>
+
+                  <form onSubmit={handleEnrollSubmit} className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase text-slate-400 tracking-widest ml-1">{t.contactFormName}</label>
+                        <input 
+                          required 
+                          type="text" 
+                          value={enrollForm.name}
+                          onChange={(e) => setEnrollForm({...enrollForm, name: e.target.value})}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
+                          placeholder="F.I.SH"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase text-slate-400 tracking-widest ml-1">{t.contactFormPhone}</label>
+                        <input 
+                          required 
+                          type="tel" 
+                          value={enrollForm.phone}
+                          onChange={(e) => setEnrollForm({...enrollForm, phone: e.target.value})}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
+                          placeholder="+998"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase text-slate-400 tracking-widest ml-1">{t.navCourses}</label>
+                        <select 
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 outline-none focus:ring-4 focus:ring-indigo-100 transition-all font-bold appearance-none cursor-pointer"
+                          value={selectedCourseForEnroll?.id}
+                          onChange={(e) => {
+                            const found = courses.find(c => c.id === e.target.value);
+                            if (found) setSelectedCourseForEnroll(found);
+                          }}
+                        >
+                          {courses.map(c => (
+                            <option key={c.id} value={c.id}>{c.title[lang]}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={isEnrolling}
+                      className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-indigo-700 disabled:bg-slate-300 transition-all flex items-center justify-center gap-3"
+                    >
+                      {isEnrolling ? <Loader2 className="animate-spin"/> : <>{t.enrollSubmit} <ArrowRight/></>}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* News Detail Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-2xl flex items-center justify-center p-6" onClick={() => setSelectedItem(null)}>
+          <div className="bg-white rounded-[60px] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
+            <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden">
+              <img src={selectedItem.data.image || 'https://via.placeholder.com/800x600'} className="w-full h-full object-cover" alt={selectedItem.data.title?.[lang]}/>
+            </div>
+            <div className="flex-1 p-14 overflow-y-auto space-y-10">
+              <div className="space-y-6">
+                <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase border border-indigo-100">
+                  Yangilik
+                </span>
+                <h2 className="text-5xl font-black text-slate-900 leading-tight">{selectedItem.data.title?.[lang]}</h2>
+              </div>
+              <div className="bg-slate-50 p-10 rounded-[48px] border border-slate-100 text-slate-700 leading-relaxed text-lg font-medium whitespace-pre-line">
+                 {selectedItem.data.content?.[lang] || selectedItem.data.description?.[lang]}
+              </div>
+              <button onClick={() => setSelectedItem(null)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">Yopish</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
