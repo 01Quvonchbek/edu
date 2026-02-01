@@ -54,10 +54,10 @@ export interface Stat {
 
 export interface CourseEnrollment {
   id: string;
-  courseId: string;
-  courseTitle: string;
-  studentName: string;
-  studentPhone: string;
+  course_id: string;
+  course_title: string;
+  student_name: string;
+  student_phone: string;
   date: string;
 }
 

@@ -118,12 +118,12 @@ const App: React.FC = () => {
       if (error) throw error;
       if (data && data[0]) {
         setMessages([data[0] as ContactMessage, ...messages]);
-        alert('Xabaringiz yuborildi!');
+        alert('Xabaringiz muvaffaqiyatli yuborildi!');
         (e.target as HTMLFormElement).reset();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error sending message:', err);
-      alert('Xatolik yuz berdi. Iltimos qayta urinib ko\'ring.');
+      alert('Xatolik: ' + (err.message || 'Xabar yuborilmadi. Baza bilan aloqa yo\'q.'));
     }
   };
 
@@ -132,29 +132,30 @@ const App: React.FC = () => {
     if (!enrollForm.name || !enrollForm.phone || !selectedCourseForEnroll) return;
 
     setIsEnrolling(true);
+    // Postgres uchun snake_case formatida ma'lumot tayyorlaymiz
     const enrollData = {
-      courseId: selectedCourseForEnroll.id,
-      courseTitle: selectedCourseForEnroll.title[lang],
-      studentName: enrollForm.name,
-      studentPhone: enrollForm.phone,
+      course_id: selectedCourseForEnroll.id,
+      course_title: selectedCourseForEnroll.title[lang],
+      student_name: enrollForm.name,
+      student_phone: enrollForm.phone,
       date: new Date().toLocaleDateString('uz-UZ'),
     };
 
     try {
       const { data, error } = await supabase.from('enrollments').insert([enrollData]).select();
       if (error) throw error;
-      if (data && data[0]) {
-        setEnrollments([data[0] as CourseEnrollment, ...enrollments]);
-        setIsEnrollSuccess(true);
-        setTimeout(() => {
-          setShowEnrollModal(false);
-          setIsEnrollSuccess(false);
-          setEnrollForm({ name: '', phone: '' });
-        }, 2000);
-      }
-    } catch (err) {
-      console.error('Enroll Error:', err);
-      alert('Arizani yuborishda xatolik yuz berdi.');
+      
+      setEnrollments([data[0] as CourseEnrollment, ...enrollments]);
+      setIsEnrollSuccess(true);
+      setTimeout(() => {
+        setShowEnrollModal(false);
+        setIsEnrollSuccess(false);
+        setEnrollForm({ name: '', phone: '' });
+      }, 2000);
+    } catch (err: any) {
+      console.error('Enrollment Error:', err);
+      // Xatolik xabarini foydalanuvchiga aniqroq ko'rsatamiz
+      alert(`Xatolik yuz berdi: ${err.message || 'Baza bilan bog\'lanishda xato'}. Iltimos, Supabase'da 'enrollments' jadvali borligini tekshiring.`);
     } finally {
       setIsEnrolling(false);
     }
@@ -229,7 +230,6 @@ const App: React.FC = () => {
                  <button key={l} onClick={() => setLang(l)} className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${lang === l ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>{l}</button>
                ))}
             </div>
-            {/* UPDATED: navbar apply button now opens modal */}
             <button onClick={() => openEnrollModal()} className="bg-slate-900 text-white px-7 py-3 rounded-2xl font-black ml-4 hover:bg-indigo-600 transition-all">{t.navEnroll}</button>
           </div>
         </div>
@@ -296,7 +296,6 @@ const App: React.FC = () => {
                 <div className="px-4 pb-6 space-y-4">
                   <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{c.title?.[lang]}</h3>
                   <p className="text-slate-500 line-clamp-2 text-sm font-medium">{c.description?.[lang]}</p>
-                  {/* UPDATED: Enroll button now opens modal */}
                   <button onClick={() => openEnrollModal(c)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black group-hover:bg-indigo-600 transition-all flex items-center justify-center gap-2">
                     {t.navEnroll} <ArrowRight size={18}/>
                   </button>
