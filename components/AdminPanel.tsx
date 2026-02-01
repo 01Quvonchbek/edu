@@ -196,6 +196,30 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
             </div>
           )}
 
+          {/* ACHIEVEMENT MANAGEMENT */}
+          {activeTab === AdminSubSection.ACHIEVEMENT_MGMT && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-black">Yutuqlar</h2>
+                <button onClick={() => { setEditingAch(null); setAchForm({ id: Date.now().toString(), title: emptyLocalized(), description: emptyLocalized(), date: '2024' }); setShowAchModal(true); }} className="bg-indigo-600 text-white p-4 rounded-2xl font-black flex items-center gap-2"><Plus size={18}/> Yangi yutuq</button>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {props.achievements.map(a => (
+                  <div key={a.id} className="bg-white p-6 rounded-[32px] border border-slate-100 flex justify-between items-center shadow-sm">
+                    <div>
+                      <h4 className="font-black text-xl">{a.title.uz}</h4>
+                      <p className="text-slate-500 font-bold">{a.date}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setEditingAch(a); setAchForm(a); setShowAchModal(true); }} className="p-3 text-indigo-600 hover:bg-indigo-50 rounded-xl"><Edit3 size={20}/></button>
+                      <button onClick={() => props.onDeleteAchievement(a.id)} className="p-3 text-rose-600 hover:bg-rose-50 rounded-xl"><Trash2 size={20}/></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* CONTACT MANAGEMENT */}
           {activeTab === AdminSubSection.CONTACT_MGMT && (
             <div className="bg-white p-10 rounded-[48px] border border-slate-100 space-y-8 animate-fadeIn">
@@ -216,14 +240,18 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
               <h2 className="text-3xl font-black">{activeTab === AdminSubSection.MESSAGES ? 'Xabarlar' : 'Arizalar'}</h2>
               {(activeTab === AdminSubSection.MESSAGES ? props.messages : props.enrollments).map((item: any) => (
                 <div key={item.id} className="bg-white p-6 rounded-[32px] border border-slate-100 flex justify-between items-center shadow-sm">
-                  <div>
+                  <div className="space-y-1">
                     <p className="font-black text-xl">{activeTab === AdminSubSection.MESSAGES ? item.name : item.student_name}</p>
-                    <p className="text-slate-500 font-bold">{activeTab === AdminSubSection.MESSAGES ? item.message : item.course_title}</p>
-                    <p className="text-xs text-indigo-600 font-black uppercase mt-1">{item.date}</p>
+                    <p className="text-slate-500 font-bold">{activeTab === AdminSubSection.MESSAGES ? item.message : `Kurs: ${item.course_title}`}</p>
+                    {activeTab === AdminSubSection.ENROLLMENTS && <p className="text-indigo-600 font-bold">Tel: {item.student_phone}</p>}
+                    <p className="text-xs text-slate-400 font-black uppercase mt-1">{item.date}</p>
                   </div>
                   <button onClick={() => activeTab === AdminSubSection.MESSAGES ? props.onDeleteMessage(item.id) : props.onDeleteEnrollment(item.id)} className="p-3 text-rose-600 hover:bg-rose-50 rounded-xl"><Trash2 size={20}/></button>
                 </div>
               ))}
+              {(activeTab === AdminSubSection.MESSAGES ? props.messages : props.enrollments).length === 0 && (
+                <div className="bg-white p-12 rounded-[32px] text-center text-slate-400 font-bold border border-dashed border-slate-200">Ma'lumot topilmadi</div>
+              )}
             </div>
           )}
 
@@ -299,6 +327,27 @@ const AdminPanel: React.FC<AdminPanelProps> = (props) => {
             <LocalizedInput label="Qisqa tavsif" value={newsForm.description as LocalizedText} onChange={v => setNewsForm({...newsForm, description: v})} isTextArea />
             <LocalizedInput label="To'liq maqola" value={newsForm.content as LocalizedText} onChange={v => setNewsForm({...newsForm, content: v})} isTextArea />
             <button onClick={() => { editingNews ? props.onUpdateNews(newsForm as NewsItem) : props.onAddNews(newsForm as NewsItem); setShowNewsModal(false); }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black">Saqlash</button>
+          </div>
+        </div>
+      )}
+
+      {/* ACHIEVEMENT MODAL */}
+      {showAchModal && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-2xl rounded-[48px] p-10 space-y-8">
+            <div className="flex justify-between items-center">
+              <h3 className="text-3xl font-black">{editingAch ? 'Yutuqni tahrirlash' : 'Yangi yutuq'}</h3>
+              <button onClick={() => setShowAchModal(false)}><X/></button>
+            </div>
+            <div className="space-y-6">
+              <LocalizedInput label="Yutuq nomi" value={achForm.title as LocalizedText} onChange={v => setAchForm({...achForm, title: v})} />
+              <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-200">
+                <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Yil</p>
+                <input className="w-full p-4 bg-white border border-slate-200 rounded-xl font-bold" value={achForm.date} onChange={e => setAchForm({...achForm, date: e.target.value})} placeholder="Masalan: 2024" />
+              </div>
+              <LocalizedInput label="Qisqa tavsif" value={achForm.description as LocalizedText} onChange={v => setAchForm({...achForm, description: v})} isTextArea />
+            </div>
+            <button onClick={() => { editingAch ? props.onUpdateAchievement(achForm as Achievement) : props.onAddAchievement(achForm as Achievement); setShowAchModal(false); }} className="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black">Saqlash</button>
           </div>
         </div>
       )}
